@@ -1,0 +1,3 @@
+[build]
+cmd = "go build -gcflags='all=-N -l' -o ./tmp/main ./cmd/grpc"
+poll = true
