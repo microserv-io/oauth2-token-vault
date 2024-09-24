@@ -8,7 +8,7 @@ WORKDIR /app/
 
 RUN go mod download
 
-RUN go build -o server ./cmd/genproto
+RUN go build -o server ./cmd/grpc
 
 FROM builder AS dev
 
