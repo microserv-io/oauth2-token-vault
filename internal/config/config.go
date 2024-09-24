@@ -6,18 +6,18 @@ import (
 )
 
 type Provider struct {
-	Name         string   `yaml:"name"`
-	ClientID     string   `yaml:"client_id"`
-	ClientSecret string   `yaml:"client_secret"`
-	RedirectURL  string   `yaml:"redirect_url"`
-	AuthURL      string   `yaml:"auth_url"`
-	TokenURL     string   `yaml:"token_url"`
-	Scopes       []string `yaml:"scopes"`
+	Name         string
+	ClientID     string
+	ClientSecret string
+	RedirectURL  string
+	AuthURL      string
+	TokenURL     string
+	Scopes       []string
 }
 
 type Config struct {
-	Providers                 []Provider `yaml:"providers"`
-	AllowProviderRegistration bool       `yaml:"allow_provider_registration"`
+	Providers                 []Provider
+	AllowProviderRegistration bool
 }
 
 func NewConfig(cfgPath string) (*Config, error) {

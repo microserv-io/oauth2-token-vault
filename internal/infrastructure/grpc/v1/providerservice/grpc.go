@@ -2,7 +2,7 @@ package providerservice
 
 import (
 	"context"
-	grpcoauthv1 "github.com/microserv-io/oauth/pkg/grpc/v1"
+	grpcoauthv1 "github.com/microserv-io/oauth-credentials-server/pkg/genproto/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"

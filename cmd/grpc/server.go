@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"github.com/microserv-io/oauth/internal/config"
-	"github.com/microserv-io/oauth/internal/domain/provider"
-	"github.com/microserv-io/oauth/internal/infrastructure/gorm"
-	v1 "github.com/microserv-io/oauth/internal/infrastructure/grpc/v1"
-	"github.com/microserv-io/oauth/internal/usecase"
+	"github.com/microserv-io/oauth-credentials-server/internal/config"
+	"github.com/microserv-io/oauth-credentials-server/internal/domain/provider"
+	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/gorm"
+	v1 "github.com/microserv-io/oauth-credentials-server/internal/infrastructure/grpc/v1"
+	"github.com/microserv-io/oauth-credentials-server/internal/usecase"
 	"log"
 	"net"
 	"os"

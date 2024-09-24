@@ -1,4 +1,4 @@
-module github.com/microserv-io/oauth
+module github.com/microserv-io/oauth-credentials-server
 
 go 1.22.5
 

@@ -2,7 +2,7 @@ package gorm
 
 import (
 	"github.com/lib/pq"
-	"github.com/microserv-io/oauth/internal/domain/oauthapp"
+	"github.com/microserv-io/oauth-credentials-server/internal/domain/oauthapp"
 	"golang.org/x/net/context"
 	"gorm.io/gorm"
 	"time"
