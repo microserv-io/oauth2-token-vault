@@ -7,6 +7,8 @@
 Standalone service that handles storage of OAuth2 credentials for multiple providers, allowing communication with other
 services over gRPC.
 
+For deployment, please checkout our public charts repository [here](https://github.com/microserv-io/public-charts).
+
 ### Deploy on Microserv.io
 > [!TIP]
 > Microserv.io is still being build and is not yet available for public use. Once Microserv.io is live, you can single click deploy this and other utility services to your private Mesh.
