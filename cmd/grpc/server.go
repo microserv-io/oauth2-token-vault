@@ -5,7 +5,7 @@ import (
 	"github.com/microserv-io/oauth-credentials-server/internal/config"
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/provider"
 	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/gorm"
-	v1 "github.com/microserv-io/oauth-credentials-server/internal/infrastructure/grpc/v1"
+	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/grpc"
 	"github.com/microserv-io/oauth-credentials-server/internal/usecase"
 	"log"
 	"net"
@@ -52,7 +52,7 @@ func main() {
 		log.Fatalf("[STARTUP] failed to load providers: %v", err)
 	}
 
-	server := v1.NewServer(
+	server := grpc.NewServer(
 		usecase.NewListOAuthUseCase(oauthAppRepository),
 		usecase.NewGetCredentialsUseCase(oauthAppRepository, nil),
 	)

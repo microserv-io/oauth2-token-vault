@@ -95,8 +95,18 @@ func (r OAuthAppRepository) Create(ctx context.Context, app *oauthapp.OAuthApp) 
 	return nil
 }
 
-func (r OAuthAppRepository) Update(ctx context.Context, app *oauthapp.OAuthApp) error {
-	if err := r.db.WithContext(ctx).Save(newOAuthAppFromDomain(app)).Error; err != nil {
+func (r OAuthAppRepository) Update(ctx context.Context, id string, updateFn func(app *oauthapp.OAuthApp) error) error {
+	var app OAuthApp
+	if err := r.db.WithContext(ctx).Find(&app, "id = ?", id).Error; err != nil {
+		return err
+	}
+
+	domainObject := app.ToDomain()
+	if err := updateFn(domainObject); err != nil {
+		return err
+	}
+
+	if err := r.db.WithContext(ctx).Save(newOAuthAppFromDomain(app.ToDomain())).Error; err != nil {
 		return err
 	}
 
@@ -107,6 +117,5 @@ func (r OAuthAppRepository) Delete(ctx context.Context, id string) error {
 	if err := r.db.WithContext(ctx).Delete(&OAuthApp{}, id).Error; err != nil {
 		return err
 	}
-
 	return nil
 }
