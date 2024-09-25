@@ -65,16 +65,17 @@ func (u *GetCredentialsUseCase) Execute(ctx context.Context, id string, ownerID 
 		Expiry:       oauthApp.ExpiresAt,
 	}
 
-	_, err = config.TokenSource(oauth2.NoContext, &token).Token()
+	_, err = config.TokenSource(context.Background(), &token).Token()
 	if err != nil {
 		return Credential{}, err
 	}
 
-	oauthApp.AccessToken = token.AccessToken
-	oauthApp.RefreshToken = token.RefreshToken
-	oauthApp.ExpiresAt = token.Expiry
-
-	if err := u.repository.Update(ctx, oauthApp); err != nil {
+	if err := u.repository.Update(ctx, oauthApp.ID, func(app *oauthapp.OAuthApp) error {
+		oauthApp.AccessToken = token.AccessToken
+		oauthApp.RefreshToken = token.RefreshToken
+		oauthApp.ExpiresAt = token.Expiry
+		return nil
+	}); err != nil {
 		return Credential{}, err
 	}
 
