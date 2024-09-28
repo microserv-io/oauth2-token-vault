@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"github.com/microserv-io/oauth-credentials-server/internal/config"
-	"github.com/microserv-io/oauth-credentials-server/internal/domain/provider"
+	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
 	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/gorm"
 	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/grpc"
 	"github.com/microserv-io/oauth-credentials-server/internal/usecase"

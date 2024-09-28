@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"context"
-	"github.com/microserv-io/oauth-credentials-server/internal/domain/provider"
+	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
 )
 
 type LoadProvidersUseCase struct {
