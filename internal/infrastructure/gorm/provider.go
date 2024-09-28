@@ -2,7 +2,7 @@ package gorm
 
 import (
 	"context"
-	"github.com/microserv-io/oauth-credentials-server/internal/domain/provider"
+	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
 	"gorm.io/gorm"
 	"time"
 )

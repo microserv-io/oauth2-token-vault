@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"context"
-	"github.com/microserv-io/oauth-credentials-server/internal/domain/oauthapp"
+	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/oauthapp"
 	"golang.org/x/oauth2"
 )
 
