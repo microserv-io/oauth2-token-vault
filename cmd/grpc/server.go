@@ -55,6 +55,7 @@ func main() {
 	server := grpc.NewServer(
 		usecase.NewListOAuthUseCase(oauthAppRepository),
 		usecase.NewGetCredentialsUseCase(oauthAppRepository, nil),
+		usecase.NewExchangeAuthorizationCodeUseCase(oauthAppRepository, providerRepository),
 	)
 
 	log.Printf("Starting server on port 8080")

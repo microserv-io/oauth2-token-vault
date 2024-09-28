@@ -14,12 +14,17 @@ import (
 func NewServer(
 	listOAuthUseCase *usecase.ListOAuthUseCase,
 	getCredentialsUseCase *usecase.GetCredentialsUseCase,
+	exchangeAuthorizationCodeUseCase *usecase.ExchangeAuthorizationCodeUseCase,
 ) *grpc.Server {
 	server := grpc.NewServer()
 
 	grpc_health_v1.RegisterHealthServer(server, health.NewServer())
 
-	oauthService := v1.NewService(listOAuthUseCase, getCredentialsUseCase)
+	oauthService := v1.NewService(
+		listOAuthUseCase,
+		getCredentialsUseCase,
+		exchangeAuthorizationCodeUseCase,
+	)
 	providerService := v12.NewService()
 
 	oauthcredentials.RegisterOAuthServiceServer(server, oauthService)

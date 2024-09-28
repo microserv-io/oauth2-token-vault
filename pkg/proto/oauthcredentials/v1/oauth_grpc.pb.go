@@ -26,6 +26,7 @@ type OAuthServiceClient interface {
 	GetOAuthByID(ctx context.Context, in *GetOAuthByIDRequest, opts ...grpc.CallOption) (*GetOAuthByIDResponse, error)
 	GetOAuthByProvider(ctx context.Context, in *GetOAuthByProviderRequest, opts ...grpc.CallOption) (*GetOAuthByProviderResponse, error)
 	GetOAuthCredentialByProvider(ctx context.Context, in *GetOAuthCredentialByProviderRequest, opts ...grpc.CallOption) (*GetOAuthCredentialByProviderResponse, error)
+	ExchangeCodeForToken(ctx context.Context, in *ExchangeCodeForTokenRequest, opts ...grpc.CallOption) (*ExchangeCodeForTokenResponse, error)
 }
 
 type oAuthServiceClient struct {
@@ -95,6 +96,15 @@ func (c *oAuthServiceClient) GetOAuthCredentialByProvider(ctx context.Context, i
 	return out, nil
 }
 
+func (c *oAuthServiceClient) ExchangeCodeForToken(ctx context.Context, in *ExchangeCodeForTokenRequest, opts ...grpc.CallOption) (*ExchangeCodeForTokenResponse, error) {
+	out := new(ExchangeCodeForTokenResponse)
+	err := c.cc.Invoke(ctx, "/oauthcredentials.v1.OAuthService/ExchangeCodeForToken", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OAuthServiceServer is the server API for OAuthService service.
 // All implementations must embed UnimplementedOAuthServiceServer
 // for forward compatibility
@@ -103,6 +113,7 @@ type OAuthServiceServer interface {
 	GetOAuthByID(context.Context, *GetOAuthByIDRequest) (*GetOAuthByIDResponse, error)
 	GetOAuthByProvider(context.Context, *GetOAuthByProviderRequest) (*GetOAuthByProviderResponse, error)
 	GetOAuthCredentialByProvider(context.Context, *GetOAuthCredentialByProviderRequest) (*GetOAuthCredentialByProviderResponse, error)
+	ExchangeCodeForToken(context.Context, *ExchangeCodeForTokenRequest) (*ExchangeCodeForTokenResponse, error)
 	mustEmbedUnimplementedOAuthServiceServer()
 }
 
@@ -121,6 +132,9 @@ func (UnimplementedOAuthServiceServer) GetOAuthByProvider(context.Context, *GetO
 }
 func (UnimplementedOAuthServiceServer) GetOAuthCredentialByProvider(context.Context, *GetOAuthCredentialByProviderRequest) (*GetOAuthCredentialByProviderResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetOAuthCredentialByProvider not implemented")
+}
+func (UnimplementedOAuthServiceServer) ExchangeCodeForToken(context.Context, *ExchangeCodeForTokenRequest) (*ExchangeCodeForTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExchangeCodeForToken not implemented")
 }
 func (UnimplementedOAuthServiceServer) mustEmbedUnimplementedOAuthServiceServer() {}
 
@@ -210,6 +224,24 @@ func _OAuthService_GetOAuthCredentialByProvider_Handler(srv interface{}, ctx con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _OAuthService_ExchangeCodeForToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExchangeCodeForTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OAuthServiceServer).ExchangeCodeForToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/oauthcredentials.v1.OAuthService/ExchangeCodeForToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OAuthServiceServer).ExchangeCodeForToken(ctx, req.(*ExchangeCodeForTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // OAuthService_ServiceDesc is the grpc.ServiceDesc for OAuthService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -228,6 +260,10 @@ var OAuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetOAuthCredentialByProvider",
 			Handler:    _OAuthService_GetOAuthCredentialByProvider_Handler,
+		},
+		{
+			MethodName: "ExchangeCodeForToken",
+			Handler:    _OAuthService_ExchangeCodeForToken_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

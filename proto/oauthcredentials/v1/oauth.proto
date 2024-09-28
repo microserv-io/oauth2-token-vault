@@ -9,6 +9,7 @@ service OAuthService {
   rpc GetOAuthByID(GetOAuthByIDRequest) returns (GetOAuthByIDResponse) {}
   rpc GetOAuthByProvider(GetOAuthByProviderRequest) returns (GetOAuthByProviderResponse) {}
   rpc GetOAuthCredentialByProvider(GetOAuthCredentialByProviderRequest) returns (GetOAuthCredentialByProviderResponse) {}
+  rpc ExchangeCodeForToken(ExchangeCodeForTokenRequest) returns (ExchangeCodeForTokenResponse) {}
 }
 
 message ListOAuthsRequest {
@@ -52,6 +53,15 @@ message OAuthTokenRequest {
   string code = 3;
   string redirect_uri = 4;
 }
+
+message ExchangeCodeForTokenRequest {
+  string owner = 1;
+  string provider = 2;
+  string code = 3;
+  string state = 4;
+}
+
+message ExchangeCodeForTokenResponse {}
 
 message OAuth {
   string id = 1;

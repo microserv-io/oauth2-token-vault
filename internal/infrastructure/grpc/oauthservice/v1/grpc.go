@@ -9,18 +9,21 @@ import (
 type Service struct {
 	oauthcredentials.UnimplementedOAuthServiceServer
 
-	listOAuthUseCase      *usecase.ListOAuthUseCase
-	getCredentialsUseCase *usecase.GetCredentialsUseCase
+	listOAuthUseCase                 *usecase.ListOAuthUseCase
+	getCredentialsUseCase            *usecase.GetCredentialsUseCase
+	exchangeAuthorizationCodeUseCase *usecase.ExchangeAuthorizationCodeUseCase
 }
 
 func NewService(
 	listOAuthUseCase *usecase.ListOAuthUseCase,
 	getCredentialsUseCase *usecase.GetCredentialsUseCase,
+	exchangeAuthorizationCodeUseCase *usecase.ExchangeAuthorizationCodeUseCase,
 ) *Service {
 
 	service := Service{
-		listOAuthUseCase:      listOAuthUseCase,
-		getCredentialsUseCase: getCredentialsUseCase,
+		listOAuthUseCase:                 listOAuthUseCase,
+		getCredentialsUseCase:            getCredentialsUseCase,
+		exchangeAuthorizationCodeUseCase: exchangeAuthorizationCodeUseCase,
 	}
 
 	return &service
@@ -68,4 +71,12 @@ func (s Service) GetOAuthCredentialByProvider(ctx context.Context, request *oaut
 	return &oauthcredentials.GetOAuthCredentialByProviderResponse{
 		AccessToken: credential.AccessToken,
 	}, nil
+}
+
+func (s Service) ExchangeCodeForToken(ctx context.Context, request *oauthcredentials.ExchangeCodeForTokenRequest) (*oauthcredentials.ExchangeCodeForTokenResponse, error) {
+	if err := s.exchangeAuthorizationCodeUseCase.Execute(ctx, request.GetProvider(), request.GetOwner(), request.GetCode()); err != nil {
+		return nil, err
+	}
+
+	return &oauthcredentials.ExchangeCodeForTokenResponse{}, nil
 }
