@@ -27,7 +27,7 @@ func NewStandardTokenSourceFactory(credentialsServerURL *url.URL) (*TokenSourceF
 
 	oauthClient := oauthcredentials.NewOAuthServiceClient(conn)
 
-	return &TokenSourceFactory{oauthClient: oauthClient}, nil
+	return NewTokenSourceFactory(oauthClient), nil
 }
 
 func (t TokenSourceFactory) CreateTokenSource(ctx context.Context, provider string, resourceOwner string) *TokenSource {
