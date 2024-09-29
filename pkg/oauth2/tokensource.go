@@ -9,6 +9,8 @@ import (
 	"net/url"
 )
 
+var _ oauth2.TokenSource = &TokenSource{}
+
 type TokenSourceFactory struct {
 	oauthClient oauthcredentials.OAuthServiceClient
 }
