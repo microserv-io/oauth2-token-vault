@@ -15,7 +15,6 @@ For deployment, please check out our public charts repository [here](https://git
 ### Deploy on Microserv.io
 
 > [!TIP]
-> Microserv.io is still being build and is not yet available for public use. Once Microserv.io is live, you can single click deploy this and other utility services to your private Mesh.
 > Microserv.io is still being build and is not yet available for public use. Once Microserv.io is live, you can single
 > click deploy this and other utility services to your private Mesh.
 
@@ -26,8 +25,10 @@ the service from your other services.
 
 ### Deployment configuration
 
-The service is configured through a config.yaml file. The following is an example of the configuration file:
+The service is configured through a `config.yaml` placed in root folder of the application. 
+If you use our Helm chart, you can override set the config using the `values.yaml` file.
 
+The following is an example of the configuration file.
 ```yaml
 providers:
   - name: google
@@ -40,10 +41,11 @@ providers:
       - "https://www.googleapis.com/auth/analytics"
 ```
 
-You can use environment variables to override the configuration file. This is recommended for For example:
+You can use environment variables to override the configuration file. This is recommended for secrets. The following is an
+example of how to override the configuration file with environment variables:
 
 ```bash
-export PROVIDERS_0_SECRET_ID=google-secret-id
+export PROVIDERS__0__SECRET_ID=google-secret-id
 ```
 
 ### Interaction with the service
