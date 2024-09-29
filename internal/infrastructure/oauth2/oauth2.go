@@ -7,14 +7,14 @@ import (
 	oauth "golang.org/x/oauth2"
 )
 
-type StdOauth2Client struct {
+type StdOAuth2Client struct {
 }
 
-func NewStdOauth2Client() *StdOauth2Client {
-	return &StdOauth2Client{}
+func NewStdOauth2Client() *StdOAuth2Client {
+	return &StdOAuth2Client{}
 }
 
-func (c *StdOauth2Client) Exchange(ctx context.Context, config *oauth2.Config, code string) (*oauth2.Token, error) {
+func (c *StdOAuth2Client) Exchange(ctx context.Context, config *oauth2.Config, code string) (*oauth2.Token, error) {
 
 	client := oauth.Config{
 		ClientID:     config.ClientID,
