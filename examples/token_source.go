@@ -8,6 +8,9 @@ import (
 	"net/url"
 )
 
+var _ = TokenSourceExample
+
+// TokenSourceExample demonstrates how to use the token source to get a token
 func TokenSourceExample() {
 
 	serverEndpoint, err := url.Parse("oauth-credentials-server:8080")

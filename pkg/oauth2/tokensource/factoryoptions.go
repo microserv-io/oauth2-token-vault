@@ -9,6 +9,9 @@ import (
 
 type Option func(*Factory) error
 
+var _, _ = WithOAuthClient, WithEndpoint
+
+// WithOAuthClient sets the OAuth client to use
 func WithOAuthClient(client oauthcredentials.OAuthServiceClient) Option {
 	return func(factory *Factory) error {
 		factory.oauthClient = client
@@ -16,6 +19,7 @@ func WithOAuthClient(client oauthcredentials.OAuthServiceClient) Option {
 	}
 }
 
+// WithEndpoint sets the endpoint to use
 func WithEndpoint(endpoint *url.URL) Option {
 	return func(factory *Factory) error {
 		conn, err := grpc.NewClient(endpoint.Host)
