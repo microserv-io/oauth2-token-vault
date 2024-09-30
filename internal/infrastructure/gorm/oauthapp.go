@@ -14,6 +14,7 @@ type OAuthApp struct {
 	Provider     string `gorm:"index"`
 	AccessToken  string
 	RefreshToken string
+	TokenType    string
 	ExpiresAt    time.Time
 	Scopes       pq.StringArray `gorm:"type:text[]"`
 	OwnerID      string
@@ -29,6 +30,7 @@ func (dao OAuthApp) ToDomain() *oauthapp.OAuthApp {
 		AccessToken:  dao.AccessToken,
 		RefreshToken: dao.RefreshToken,
 		ExpiresAt:    dao.ExpiresAt,
+		TokenType:    dao.TokenType,
 		Scopes:       dao.Scopes,
 		OwnerID:      dao.OwnerID,
 		CreatedAt:    dao.CreatedAt,
@@ -44,6 +46,7 @@ func newOAuthAppFromDomain(app *oauthapp.OAuthApp) *OAuthApp {
 		RefreshToken: app.RefreshToken,
 		ExpiresAt:    app.ExpiresAt,
 		Scopes:       app.Scopes,
+		TokenType:    app.TokenType,
 		OwnerID:      app.OwnerID,
 		CreatedAt:    app.CreatedAt,
 		UpdatedAt:    app.UpdatedAt,

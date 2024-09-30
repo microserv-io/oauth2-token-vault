@@ -7,6 +7,7 @@ type OAuthApp struct {
 	Provider     string
 	AccessToken  string
 	RefreshToken string
+	TokenType    string
 	ExpiresAt    time.Time
 	Scopes       []string
 	CreatedAt    time.Time
