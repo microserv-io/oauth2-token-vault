@@ -1,36 +1,29 @@
-package oauth2
+package tokensource
 
 import (
 	"context"
 	"fmt"
 	"github.com/microserv-io/oauth-credentials-server/pkg/proto/oauthcredentials/v1"
 	"golang.org/x/oauth2"
-	"google.golang.org/grpc"
-	"net/url"
 )
 
 var _ oauth2.TokenSource = &TokenSource{}
 
-type TokenSourceFactory struct {
+type Factory struct {
 	oauthClient oauthcredentials.OAuthServiceClient
 }
 
-func NewTokenSourceFactory(oauthClient oauthcredentials.OAuthServiceClient) *TokenSourceFactory {
-	return &TokenSourceFactory{oauthClient: oauthClient}
-}
+func NewFactory(opts ...Option) *Factory {
+	factory := &Factory{}
 
-func NewStandardTokenSourceFactory(credentialsServerURL *url.URL) (*TokenSourceFactory, error) {
-	conn, err := grpc.NewClient(credentialsServerURL.Host)
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to server: %w", err)
+	for _, option := range opts {
+		_ = option(factory)
 	}
 
-	oauthClient := oauthcredentials.NewOAuthServiceClient(conn)
-
-	return NewTokenSourceFactory(oauthClient), nil
+	return factory
 }
 
-func (t TokenSourceFactory) CreateTokenSource(ctx context.Context, provider string, resourceOwner string) *TokenSource {
+func (t Factory) CreateTokenSource(ctx context.Context, provider string, resourceOwner string) *TokenSource {
 	return NewTokenSource(ctx, t.oauthClient, provider, resourceOwner)
 }
 
