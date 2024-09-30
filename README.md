@@ -57,6 +57,37 @@ can install it by running the following command:
 go get github.com/microserv-io/oauth-credentials-server@latest
 ```
 
+### Retrieving resource servers with credentials
+
+To retrieve access credentials, you can use the `GetCredentialsForProvider` method on the gRPC Client.
+
+We also provide a direct integration with `golang.org/x/oauth2` package. See the following example:
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"github.com/microserv-io/oauth-credentials-server/pkg/oauth2/tokensource"
+	"golang.org/x/oauth2"
+	"net/url"
+)
+
+func main() {
+	endpoint, _ := url.Parse("localhost:8080")
+	// Create a new token source factory
+	factory := tokensource.NewFactory(tokensource.WithEndpoint(endpoint))
+
+	// Create a new client with the token source for the provider and resource owner	
+	client := oauth2.NewClient(context.Background(), factory.CreateTokenSource(context.TODO(), "google", "some-user-id"))
+
+	// Use the client to make requests
+	_, _ = client.Get("https://www.googleapis.com/auth/analytics")
+}
+
+```
+
 Please see the [examples](/examples) folder for a simple example of how to interact with the service.
 
 ## Contributing
