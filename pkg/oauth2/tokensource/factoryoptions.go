@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/microserv-io/oauth-credentials-server/pkg/proto/oauthcredentials/v1"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"net/url"
 )
 
@@ -22,7 +23,7 @@ func WithOAuthClient(client oauthcredentials.OAuthServiceClient) Option {
 // WithEndpoint sets the endpoint to use
 func WithEndpoint(endpoint *url.URL) Option {
 	return func(factory *Factory) error {
-		conn, err := grpc.NewClient(endpoint.Host)
+		conn, err := grpc.NewClient(endpoint.Host, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			return fmt.Errorf("failed to connect to server: %w", err)
 		}
