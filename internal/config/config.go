@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"github.com/spf13/viper"
+	"os"
 )
 
 type Provider struct {
@@ -33,6 +34,37 @@ func NewConfig(cfgPath string) (*Config, error) {
 	var configObject Config
 	if err := viper.Unmarshal(&configObject); err != nil {
 		return nil, err
+	}
+
+	for i, provider := range configObject.Providers {
+		if provider.Name == "" {
+			return nil, fmt.Errorf("provider name is required for provider at index %d", i)
+		}
+		if provider.ClientID == "" {
+			return nil, fmt.Errorf("client id is required for provider %s", provider.Name)
+		}
+
+		clientSecret := os.Getenv(fmt.Sprintf("PROVIDER__%d__CLIENT_SECRET", i))
+		if clientSecret != "" {
+			provider.ClientSecret = clientSecret
+		}
+
+		if provider.ClientSecret == "" {
+			return nil, fmt.Errorf("client secret is required for provider %s", provider.Name)
+		}
+
+		if provider.RedirectURL == "" {
+			return nil, fmt.Errorf("redirect url is required for provider %s", provider.Name)
+		}
+		if provider.AuthURL == "" {
+			return nil, fmt.Errorf("auth url is required for provider %s", provider.Name)
+		}
+		if provider.TokenURL == "" {
+			return nil, fmt.Errorf("token url is required for provider %s", provider.Name)
+		}
+		if len(provider.Scopes) == 0 {
+			return nil, fmt.Errorf("scopes are required for provider %s", provider.Name)
+		}
 	}
 
 	return &configObject, nil
