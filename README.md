@@ -2,7 +2,7 @@
 
 > [!WARNING]
 > 
-> This repository is a work in progress and is not yet ready for use.
+> This repository is a work in progress and is not yet ready for use. APIs are subject to change and will not be backwards compatible until release.
 
 Standalone service that handles storage of OAuth2 credentials for multiple providers, allowing communication with other
 services over gRPC.
