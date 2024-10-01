@@ -2,85 +2,65 @@ package usecase
 
 import (
 	"context"
+	"fmt"
+	"github.com/microserv-io/oauth-credentials-server/internal/domain"
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/oauthapp"
-	"golang.org/x/oauth2"
+	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
+	"time"
 )
 
-type ProviderConfig struct {
-	ClientID     string
-	ClientSecret string
-	Scopes       []string
-	AuthURL      string
-	TokenURL     string
-	RedirectURL  string
-}
-
-type ProviderRepository interface {
-	Find(provider string) (*ProviderConfig, error)
-}
-
 type Credential struct {
+	TokenType    string
+	ExpiresAt    time.Time
 	AccessToken  string
 	RefreshToken string
 }
 
 type GetCredentialsUseCase struct {
 	repository         oauthapp.Repository
-	providerRepository ProviderRepository
+	providerRepository provider.Repository
+	tokenSourceFactory domain.TokenSourceFactory
 }
 
-func NewGetCredentialsUseCase(repository oauthapp.Repository, providerRepository ProviderRepository) *GetCredentialsUseCase {
+func NewGetCredentialsUseCase(repository oauthapp.Repository, providerRepository provider.Repository, tokenSourceFactory domain.TokenSourceFactory) *GetCredentialsUseCase {
 	return &GetCredentialsUseCase{
 		repository:         repository,
 		providerRepository: providerRepository,
+		tokenSourceFactory: tokenSourceFactory,
 	}
 }
 
 func (u *GetCredentialsUseCase) Execute(ctx context.Context, id string, ownerID string) (Credential, error) {
-	oauthApp, err := u.repository.Find(ctx, id, ownerID)
+	oauthApp, err := u.repository.Find(ctx, ownerID, id)
 	if err != nil {
-		return Credential{}, err
+		return Credential{}, fmt.Errorf("failed to find oauth app: %w", err)
 	}
 
-	providerConfig, err := u.providerRepository.Find(oauthApp.Provider)
+	p, err := u.providerRepository.FindByName(ctx, oauthApp.Provider)
 	if err != nil {
-		return Credential{}, err
+		return Credential{}, fmt.Errorf("failed to find provider: %w", err)
 	}
 
-	config := oauth2.Config{
-		ClientID:     providerConfig.ClientID,
-		ClientSecret: providerConfig.ClientSecret,
-		Scopes:       providerConfig.Scopes,
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  providerConfig.AuthURL,
-			TokenURL: providerConfig.TokenURL,
-		},
-		RedirectURL: providerConfig.RedirectURL,
-	}
+	tokenSource := u.tokenSourceFactory.NewTokenSource(ctx, *p, *oauthApp)
+	newToken, err := tokenSource.Token()
 
-	token := oauth2.Token{
-		AccessToken:  oauthApp.AccessToken,
-		TokenType:    "",
-		RefreshToken: oauthApp.RefreshToken,
-		Expiry:       oauthApp.ExpiresAt,
-	}
-
-	_, err = config.TokenSource(context.Background(), &token).Token()
 	if err != nil {
-		return Credential{}, err
+		return Credential{}, fmt.Errorf("failed to refresh token: %w", err)
 	}
 
 	if err := u.repository.Update(ctx, oauthApp.ID, func(app *oauthapp.OAuthApp) error {
-		oauthApp.AccessToken = token.AccessToken
-		oauthApp.RefreshToken = token.RefreshToken
-		oauthApp.ExpiresAt = token.Expiry
+		oauthApp.AccessToken = newToken.AccessToken
+		oauthApp.RefreshToken = newToken.RefreshToken
+		oauthApp.ExpiresAt = newToken.Expiry
 		return nil
 	}); err != nil {
-		return Credential{}, err
+		return Credential{}, fmt.Errorf("failed to update token: %w", err)
 	}
 
 	return Credential{
-		AccessToken:  token.AccessToken,
-		RefreshToken: token.RefreshToken,
+		TokenType:    oauthApp.TokenType,
+		ExpiresAt:    oauthApp.ExpiresAt,
+		AccessToken:  oauthApp.AccessToken,
+		RefreshToken: oauthApp.RefreshToken,
 	}, nil
 }

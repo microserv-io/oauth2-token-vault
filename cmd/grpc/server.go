@@ -6,6 +6,7 @@ import (
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
 	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/gorm"
 	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/grpc"
+	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/oauth2"
 	"github.com/microserv-io/oauth-credentials-server/internal/usecase"
 	"log"
 	"net"
@@ -54,7 +55,7 @@ func main() {
 
 	server := grpc.NewServer(
 		usecase.NewListOAuthUseCase(oauthAppRepository),
-		usecase.NewGetCredentialsUseCase(oauthAppRepository, nil),
+		usecase.NewGetCredentialsUseCase(oauthAppRepository, providerRepository, &oauth2.TokenSourceFactory{}),
 	)
 
 	log.Printf("Starting server on port 8080")
