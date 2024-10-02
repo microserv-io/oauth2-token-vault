@@ -48,44 +48,56 @@ func TestNewConfig(t *testing.T) {
 			wantConfig: nil,
 		},
 		{
-			name:       "missing client id",
-			cfgFile:    "missing_client_id",
-			envVars:    map[string]string{},
+			name:    "missing client id",
+			cfgFile: "missing_client_id",
+			envVars: map[string]string{
+				"PROVIDER__0__CLIENT_SECRET": "env_client_secret",
+			},
 			wantErr:    true,
 			wantConfig: nil,
 		},
 		{
-			name:       "missing provider name",
-			cfgFile:    "missing_provider_name",
-			envVars:    map[string]string{},
+			name:    "missing provider name",
+			cfgFile: "missing_provider_name",
+			envVars: map[string]string{
+				"PROVIDER__0__CLIENT_SECRET": "env_client_secret",
+			},
 			wantErr:    true,
 			wantConfig: nil,
 		},
 		{
-			name:       "missing redirect url",
-			cfgFile:    "missing_redirect_url",
-			envVars:    map[string]string{},
+			name:    "missing redirect url",
+			cfgFile: "missing_redirect_url",
+			envVars: map[string]string{
+				"PROVIDER__0__CLIENT_SECRET": "env_client_secret",
+			},
 			wantErr:    true,
 			wantConfig: nil,
 		},
 		{
-			name:       "missing auth url",
-			cfgFile:    "missing_auth_url",
-			envVars:    map[string]string{},
+			name:    "missing auth url",
+			cfgFile: "missing_auth_url",
+			envVars: map[string]string{
+				"PROVIDER__0__CLIENT_SECRET": "env_client_secret",
+			},
 			wantErr:    true,
 			wantConfig: nil,
 		},
 		{
-			name:       "missing token url",
-			cfgFile:    "missing_token_url",
-			envVars:    map[string]string{},
+			name:    "missing token url",
+			cfgFile: "missing_token_url",
+			envVars: map[string]string{
+				"PROVIDER__0__CLIENT_SECRET": "env_client_secret",
+			},
 			wantErr:    true,
 			wantConfig: nil,
 		},
 		{
-			name:       "missing scopes",
-			cfgFile:    "missing_scopes",
-			envVars:    map[string]string{},
+			name:    "missing scopes",
+			cfgFile: "missing_scopes",
+			envVars: map[string]string{
+				"PROVIDER__0__CLIENT_SECRET": "env_client_secret",
+			},
 			wantErr:    true,
 			wantConfig: nil,
 		},
@@ -95,8 +107,10 @@ func TestNewConfig(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Set environment variables
 			for key, value := range tt.envVars {
-				os.Setenv(key, value)
-				defer os.Unsetenv(key)
+				_ = os.Setenv(key, value)
+				defer func(key string) {
+					_ = os.Unsetenv(key)
+				}(key)
 			}
 
 			gotConfig, err := NewConfig(cfgPath, tt.cfgFile)
