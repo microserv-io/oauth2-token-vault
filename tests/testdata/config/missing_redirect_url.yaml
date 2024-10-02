@@ -1,0 +1,10 @@
+providers:
+  - name: google
+    client_id: google-client-id
+    client_secret: ""
+    redirect_url: ""
+    auth_url: https://accounts.google.com/o/oauth2/auth
+    token_url: https://accounts.google.com/o/oauth2/token
+    scopes:
+      - https://www.googleapis.com/auth/analytics
+allow_provider_registration: true

@@ -1,0 +1,9 @@
+providers:
+  - name: google
+    client_id: google-client-id
+    client_secret: ""
+    redirect_url: http://localhost:8080/oauth/google/callback
+    auth_url: https://accounts.google.com/o/oauth2/auth
+    token_url: https://accounts.google.com/o/oauth2/token
+    scopes: []
+allow_provider_registration: true
