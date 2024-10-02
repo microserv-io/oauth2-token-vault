@@ -7,23 +7,27 @@ import (
 )
 
 type Provider struct {
-	Name         string
-	ClientID     string
-	ClientSecret string
-	RedirectURL  string
-	AuthURL      string
-	TokenURL     string
-	Scopes       []string
+	Name         string   `mapstructure:"name"`
+	ClientID     string   `mapstructure:"client_id"`
+	ClientSecret string   `mapstructure:"client_secret"`
+	RedirectURL  string   `mapstructure:"redirect_url"`
+	AuthURL      string   `mapstructure:"auth_url"`
+	TokenURL     string   `mapstructure:"token_url"`
+	Scopes       []string `mapstructure:"scopes"`
 }
 
 type Config struct {
 	Providers                 []Provider
-	AllowProviderRegistration bool
+	AllowProviderRegistration bool `mapstructure:"allow_provider_registration"`
 }
 
-func NewConfig(cfgPath string) (*Config, error) {
+func NewConfig(cfgPath string, configFileName string) (*Config, error) {
 
-	viper.SetConfigName("config")
+	if configFileName == "" {
+		configFileName = "config"
+	}
+
+	viper.SetConfigName(configFileName)
 	viper.AddConfigPath(cfgPath)
 	viper.AddConfigPath(".")
 
@@ -65,6 +69,8 @@ func NewConfig(cfgPath string) (*Config, error) {
 		if len(provider.Scopes) == 0 {
 			return nil, fmt.Errorf("scopes are required for provider %s", provider.Name)
 		}
+
+		configObject.Providers[i] = provider
 	}
 
 	return &configObject, nil

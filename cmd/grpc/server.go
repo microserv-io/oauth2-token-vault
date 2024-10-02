@@ -17,7 +17,7 @@ const CfgPath = "/cfg"
 
 func main() {
 
-	configObj, err := config.NewConfig(CfgPath)
+	configObj, err := config.NewConfig(CfgPath, "config")
 	if err != nil {
 		panic(err)
 	}
