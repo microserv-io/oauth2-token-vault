@@ -11,7 +11,6 @@ import (
 	"github.com/microserv-io/oauth-credentials-server/internal/usecase"
 	"log"
 	"net"
-	"os"
 )
 
 const CfgPath = "/cfg"
