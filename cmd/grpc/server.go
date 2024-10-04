@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/microserv-io/oauth-credentials-server/internal/config"
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
 	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/gorm"
@@ -10,7 +11,6 @@ import (
 	"github.com/microserv-io/oauth-credentials-server/internal/usecase"
 	"log"
 	"net"
-	"os"
 )
 
 const CfgPath = "/cfg"
@@ -22,9 +22,22 @@ func main() {
 		panic(err)
 	}
 
-	log.Printf("Configuration loaded: %+v", configObj)
+	log.Printf("Configuration loaded from file.")
 
-	db, err := gorm.Open(os.Getenv("DATABASE_URL"), true)
+	db, err := gorm.Open(
+		fmt.Sprintf(
+			"host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
+			configObj.Database.Host,
+			configObj.Database.User,
+			configObj.Database.Password,
+			configObj.Database.Name,
+			configObj.Database.Port,
+		),
+		true,
+		6,
+		5,
+		nil,
+	)
 	if err != nil {
 		panic(err)
 	}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/viper"
 	"os"
+	"strings"
 )
 
 type Provider struct {
@@ -16,27 +17,59 @@ type Provider struct {
 	Scopes       []string `mapstructure:"scopes"`
 }
 
+type Database struct {
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	User     string `mapstructure:"user"`
+	Password string `mapstructure:"password"`
+	Name     string `mapstructure:"name"`
+}
+
 type Config struct {
-	Providers                 []Provider
-	AllowProviderRegistration bool `mapstructure:"allow_provider_registration"`
+	Database                  Database   `mapstructure:"database"`
+	Providers                 []Provider `mapstructure:"providers"`
+	AllowProviderRegistration bool       `mapstructure:"allow_provider_registration"`
 }
 
 func NewConfig(cfgPath string, configFileName string) (*Config, error) {
-
 	if configFileName == "" {
 		configFileName = "config"
 	}
 
-	viper.SetConfigName(configFileName)
-	viper.AddConfigPath(cfgPath)
-	viper.AddConfigPath(".")
+	v := viper.NewWithOptions(viper.EnvKeyReplacer(strings.NewReplacer(".", "_")))
 
-	if err := viper.ReadInConfig(); err != nil {
+	v.SetConfigName(configFileName)
+	v.AddConfigPath(cfgPath)
+	v.AddConfigPath(".")
+
+	v.AutomaticEnv()
+
+	if err := v.BindEnv("database.host", "DATABASE_HOST"); err != nil {
+		return nil, fmt.Errorf("error binding env variable: %w", err)
+	}
+
+	if err := v.BindEnv("database.port", "DATABASE_PORT"); err != nil {
+		return nil, fmt.Errorf("error binding env variable: %w", err)
+	}
+
+	if err := v.BindEnv("database.user", "DATABASE_USER"); err != nil {
+		return nil, fmt.Errorf("error binding env variable: %w", err)
+	}
+
+	if err := v.BindEnv("database.password", "DATABASE_PASSWORD"); err != nil {
+		return nil, fmt.Errorf("error binding env variable: %w", err)
+	}
+
+	if err := v.BindEnv("database.name", "DATABASE_NAME"); err != nil {
+		return nil, fmt.Errorf("error binding env variable: %w", err)
+	}
+
+	if err := v.ReadInConfig(); err != nil {
 		return nil, fmt.Errorf("error reading config file: %w", err)
 	}
 
 	var configObject Config
-	if err := viper.Unmarshal(&configObject); err != nil {
+	if err := v.Unmarshal(&configObject); err != nil {
 		return nil, err
 	}
 
