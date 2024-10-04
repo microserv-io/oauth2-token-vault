@@ -2,6 +2,7 @@ package gorm
 
 import (
 	"context"
+	"github.com/lib/pq"
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
 	"gorm.io/gorm"
 	"time"
@@ -15,7 +16,7 @@ type Provider struct {
 	RedirectURL  string
 	AuthURL      string
 	TokenURL     string
-	Scopes       []string
+	Scopes       pq.StringArray `gorm:"type:text[]"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
