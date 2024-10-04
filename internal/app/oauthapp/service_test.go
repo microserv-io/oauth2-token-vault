@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/microserv-io/oauth-credentials-server/internal/app/oauthapp/mocks"
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/oauthapp"
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
 	"github.com/stretchr/testify/assert"
@@ -41,8 +40,8 @@ func TestOAuthAppService_ListOAuths(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			oauthAppRepository := mocks.NewMockOAuthAppRepository(t)
-			providerRepository := mocks.NewMockProviderRepository(t)
+			oauthAppRepository := NewMockOAuthAppRepository(t)
+			providerRepository := NewMockProviderRepository(t)
 			logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 			service := NewOAuthAppService(oauthAppRepository, providerRepository, logger)
@@ -91,8 +90,8 @@ func TestOAuthAppService_GetOAuthByID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			oauthAppRepository := mocks.NewMockOAuthAppRepository(t)
-			providerRepository := mocks.NewMockProviderRepository(t)
+			oauthAppRepository := NewMockOAuthAppRepository(t)
+			providerRepository := NewMockProviderRepository(t)
 			logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 			service := NewOAuthAppService(oauthAppRepository, providerRepository, logger)
@@ -150,8 +149,8 @@ func TestOAuthAppService_CreateAuthorizationURL(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			oauthAppRepository := mocks.NewMockOAuthAppRepository(t)
-			providerRepository := mocks.NewMockProviderRepository(t)
+			oauthAppRepository := NewMockOAuthAppRepository(t)
+			providerRepository := NewMockProviderRepository(t)
 			logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 			service := NewOAuthAppService(oauthAppRepository, providerRepository, logger)
