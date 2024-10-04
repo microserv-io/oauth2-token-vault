@@ -10,7 +10,9 @@ import (
 	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/oauth2"
 	"github.com/microserv-io/oauth-credentials-server/internal/usecase"
 	"log"
+	"log/slog"
 	"net"
+	"os"
 )
 
 const CfgPath = "/cfg"
@@ -66,9 +68,12 @@ func main() {
 		log.Fatalf("[STARTUP] failed to load providers: %v", err)
 	}
 
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
 	server := grpc.NewServer(
 		usecase.NewListOAuthUseCase(oauthAppRepository),
 		usecase.NewGetCredentialsUseCase(oauthAppRepository, providerRepository, &oauth2.TokenSourceFactory{}),
+		logger,
 	)
 
 	log.Printf("Starting server on port 8080")

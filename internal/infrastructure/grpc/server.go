@@ -9,13 +9,16 @@ import (
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
+	"log/slog"
 )
 
 func NewServer(
 	listOAuthUseCase *usecase.ListOAuthUseCase,
 	getCredentialsUseCase *usecase.GetCredentialsUseCase,
+	logger *slog.Logger,
 ) *grpc.Server {
-	server := grpc.NewServer()
+
+	server := grpc.NewServer(grpc.UnaryInterceptor(UnaryServerInterceptor(logger)))
 
 	grpc_health_v1.RegisterHealthServer(server, health.NewServer())
 
