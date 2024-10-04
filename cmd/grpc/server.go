@@ -24,7 +24,20 @@ func main() {
 
 	log.Printf("Configuration loaded from file.")
 
-	db, err := gorm.Open(fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable", configObj.Database.Host, configObj.Database.User, configObj.Database.Password, configObj.Database.Name, configObj.Database.Port), true)
+	db, err := gorm.Open(
+		fmt.Sprintf(
+			"host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
+			configObj.Database.Host,
+			configObj.Database.User,
+			configObj.Database.Password,
+			configObj.Database.Name,
+			configObj.Database.Port,
+		),
+		true,
+		6,
+		5,
+		nil,
+	)
 	if err != nil {
 		panic(err)
 	}
