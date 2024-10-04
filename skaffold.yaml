@@ -1,0 +1,46 @@
+#nonk8s
+apiVersion: skaffold/v4beta11
+kind: Config
+
+build:
+  local:
+    push: false
+
+  artifacts:
+    - image: microserv-io/oauth-credentials-server
+      context: .
+      docker:
+        dockerfile: Dockerfile
+        target: dev
+      sync:
+        manual:
+          - src: "**/*.go"
+            dest: .
+
+deploy:
+  kubeContext: orbstack
+  helm:
+    releases:
+      - name: microservio-oauth-credentials-server
+        namespace: microservio-oauth-credentials-server
+        createNamespace: true
+        chartPath: ../../../helm/charts/components/oauth-credentials-server
+        setValues:
+          "image.pullPolicy": "IfNotPresent"
+          "config": |-
+            providers:
+            - name: example
+              client_id: "23"
+              client_secret: "123"
+              redirect_url: "123"
+              auth_url: "https://example.com/authorize"
+              token_url: "https://example.com/token"
+              scopes: ["read"]
+            allow_provider_registration: true
+          postgresql.enabled: true
+          postgresql.auth.username: oauth-credentials-server
+          postgresql.auth.password: unsafePostgresPassword
+          postgresql.auth.database: oauth-credentials-server
+        setValueTemplates:
+          "image.tag": "{{ .IMAGE_TAG_microserv_io_oauth_credentials_server }}"
+          "image.repository": "{{ .IMAGE_REPO_microserv_io_oauth_credentials_server }}"

@@ -2,11 +2,11 @@ FROM golang:1.23-alpine AS builder
 
 WORKDIR /app/
 
-COPY . .
-
-WORKDIR /app/
+COPY go.mod go.sum ./
 
 RUN go mod download
+
+COPY . .
 
 RUN go build -o server ./cmd/grpc
 
@@ -19,8 +19,6 @@ ENV GOTRACEBACK=all
 CMD ["/go/bin/air"]
 
 FROM alpine:3.20
-
-ARG APP_NAME
 
 COPY --from=builder app/server app/server
 
