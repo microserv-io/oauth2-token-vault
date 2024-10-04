@@ -41,13 +41,13 @@ func TestOAuthAppService_ListOAuths(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			oauthAppRepository := new(mocks.MockOAuthAppRepository)
-			providerRepository := new(mocks.MockProviderRepository)
+			oauthAppRepository := mocks.NewMockOAuthAppRepository(t)
+			providerRepository := mocks.NewMockProviderRepository(t)
 			logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 			service := NewOAuthAppService(oauthAppRepository, providerRepository, logger)
 
-			oauthAppRepository.On("ListForOwner", mock.Anything, tt.ownerID).Return(tt.mockReturn, tt.mockError)
+			oauthAppRepository.EXPECT().ListForOwner(mock.Anything, tt.ownerID).Return(tt.mockReturn, tt.mockError)
 
 			result, err := service.ListOAuthsForOwner(context.Background(), tt.ownerID)
 			if tt.expectedError {
@@ -91,13 +91,13 @@ func TestOAuthAppService_GetOAuthByID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			oauthAppRepository := new(mocks.MockOAuthAppRepository)
-			providerRepository := new(mocks.MockProviderRepository)
+			oauthAppRepository := mocks.NewMockOAuthAppRepository(t)
+			providerRepository := mocks.NewMockProviderRepository(t)
 			logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 			service := NewOAuthAppService(oauthAppRepository, providerRepository, logger)
 
-			oauthAppRepository.On("Find", mock.Anything, tt.ownerID, tt.providerID).Return(tt.mockReturn, tt.mockError)
+			oauthAppRepository.EXPECT().Find(mock.Anything, tt.ownerID, tt.providerID).Return(tt.mockReturn, tt.mockError)
 
 			result, err := service.GetOAuthForProviderAndOwner(context.Background(), tt.providerID, tt.ownerID)
 			if tt.expectedError {
@@ -150,13 +150,13 @@ func TestOAuthAppService_CreateAuthorizationURL(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			oauthAppRepository := new(mocks.MockOAuthAppRepository)
-			providerRepository := new(mocks.MockProviderRepository)
+			oauthAppRepository := mocks.NewMockOAuthAppRepository(t)
+			providerRepository := mocks.NewMockProviderRepository(t)
 			logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 			service := NewOAuthAppService(oauthAppRepository, providerRepository, logger)
 
-			providerRepository.On("FindByName", mock.Anything, tt.providerID).Return(tt.mockProvider, tt.mockError)
+			providerRepository.EXPECT().FindByName(mock.Anything, tt.providerID).Return(tt.mockProvider, tt.mockError)
 
 			result, err := service.CreateAuthorizationURLForProvider(context.Background(), tt.providerID, tt.scopes, tt.state)
 			if tt.expectedError {
