@@ -2,32 +2,31 @@ package v1
 
 import (
 	"context"
-	"github.com/microserv-io/oauth-credentials-server/internal/usecase"
+	"github.com/microserv-io/oauth-credentials-server/internal/app/oauthapp"
 	"github.com/microserv-io/oauth-credentials-server/pkg/proto/oauthcredentials/v1"
 )
+
+var _ oauthcredentials.OAuthServiceServer = &Service{}
 
 type Service struct {
 	oauthcredentials.UnimplementedOAuthServiceServer
 
-	listOAuthUseCase      *usecase.ListOAuthUseCase
-	getCredentialsUseCase *usecase.GetCredentialsUseCase
+	oauthAppService *oauthapp.Service
 }
 
 func NewService(
-	listOAuthUseCase *usecase.ListOAuthUseCase,
-	getCredentialsUseCase *usecase.GetCredentialsUseCase,
+	oauthAppService *oauthapp.Service,
 ) *Service {
 
 	service := Service{
-		listOAuthUseCase:      listOAuthUseCase,
-		getCredentialsUseCase: getCredentialsUseCase,
+		oauthAppService: oauthAppService,
 	}
 
 	return &service
 }
 
 func (s Service) ListOAuths(request *oauthcredentials.ListOAuthsRequest, server oauthcredentials.OAuthService_ListOAuthsServer) error {
-	oauthApps, err := s.listOAuthUseCase.Execute(server.Context(), request.GetOwner())
+	oauthApps, err := s.oauthAppService.ListOAuthsForOwner(server.Context(), request.GetOwner())
 	if err != nil {
 		return err
 	}
@@ -38,7 +37,7 @@ func (s Service) ListOAuths(request *oauthcredentials.ListOAuthsRequest, server 
 			{
 				Id:       oauthApp.ID,
 				Owner:    oauthApp.OwnerID,
-				Provider: oauthApp.Provider,
+				Provider: oauthApp.ProviderID,
 				Scopes:   oauthApp.Scopes,
 			},
 		}}); err != nil {
@@ -55,17 +54,23 @@ func (s Service) GetOAuthByID(ctx context.Context, request *oauthcredentials.Get
 }
 
 func (s Service) GetOAuthByProvider(ctx context.Context, request *oauthcredentials.GetOAuthByProviderRequest) (*oauthcredentials.GetOAuthByProviderResponse, error) {
-	//TODO implement me
-	panic("implement me")
-}
+	oauthApp, err := s.oauthAppService.GetOAuthForProviderAndOwner(ctx, request.GetProvider(), request.GetOwner())
 
-func (s Service) GetOAuthCredentialByProvider(ctx context.Context, request *oauthcredentials.GetOAuthCredentialByProviderRequest) (*oauthcredentials.GetOAuthCredentialByProviderResponse, error) {
-	credential, err := s.getCredentialsUseCase.Execute(ctx, request.GetProvider(), request.GetOwner())
 	if err != nil {
 		return nil, err
 	}
 
-	return &oauthcredentials.GetOAuthCredentialByProviderResponse{
-		AccessToken: credential.AccessToken,
+	return &oauthcredentials.GetOAuthByProviderResponse{
+		Oauth: &oauthcredentials.OAuth{
+			Id:       oauthApp.ID,
+			Owner:    oauthApp.OwnerID,
+			Provider: oauthApp.ProviderID,
+			Scopes:   oauthApp.Scopes,
+		},
 	}, nil
+}
+
+func (s Service) GetOAuthCredentialByProvider(ctx context.Context, request *oauthcredentials.GetOAuthCredentialByProviderRequest) (*oauthcredentials.GetOAuthCredentialByProviderResponse, error) {
+	//TODO implement me
+	panic("implement	me")
 }
