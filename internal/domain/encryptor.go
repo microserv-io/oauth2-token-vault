@@ -1,4 +1,4 @@
-package model
+package domain
 
 type Encryptor interface {
 	Encrypt(plaintext string) (string, error)
