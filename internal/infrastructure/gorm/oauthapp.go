@@ -98,7 +98,7 @@ func (r OAuthAppRepository) Create(ctx context.Context, app *oauthapp.OAuthApp) 
 	return nil
 }
 
-func (r OAuthAppRepository) Update(ctx context.Context, id string, updateFn func(app *oauthapp.OAuthApp) error) error {
+func (r OAuthAppRepository) UpdateByID(ctx context.Context, id string, updateFn func(app *oauthapp.OAuthApp) error) error {
 	var app OAuthApp
 	if err := r.db.WithContext(ctx).Find(&app, "id = ?", id).Error; err != nil {
 		return err

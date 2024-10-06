@@ -9,6 +9,10 @@ type AuthorizationURLResponse struct {
 	URL *url.URL
 }
 
+type RetrieveAccessTokenResponse struct {
+	AccessToken string
+}
+
 type OAuthApp struct {
 	ID         string
 	OwnerID    string

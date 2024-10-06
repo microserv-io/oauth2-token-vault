@@ -141,6 +141,54 @@ func (_c *MockOAuthAppRepository_ListForOwner_Call) RunAndReturn(run func(contex
 	return _c
 }
 
+// UpdateByID provides a mock function with given fields: ctx, id, updateFunc
+func (_m *MockOAuthAppRepository) UpdateByID(ctx context.Context, id string, updateFunc func(*modelsoauthapp.OAuthApp) error) error {
+	ret := _m.Called(ctx, id, updateFunc)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateByID")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, func(*modelsoauthapp.OAuthApp) error) error); ok {
+		r0 = rf(ctx, id, updateFunc)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// MockOAuthAppRepository_UpdateByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateByID'
+type MockOAuthAppRepository_UpdateByID_Call struct {
+	*mock.Call
+}
+
+// UpdateByID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+//   - updateFunc func(*modelsoauthapp.OAuthApp) error
+func (_e *MockOAuthAppRepository_Expecter) UpdateByID(ctx interface{}, id interface{}, updateFunc interface{}) *MockOAuthAppRepository_UpdateByID_Call {
+	return &MockOAuthAppRepository_UpdateByID_Call{Call: _e.mock.On("UpdateByID", ctx, id, updateFunc)}
+}
+
+func (_c *MockOAuthAppRepository_UpdateByID_Call) Run(run func(ctx context.Context, id string, updateFunc func(*modelsoauthapp.OAuthApp) error)) *MockOAuthAppRepository_UpdateByID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(func(*modelsoauthapp.OAuthApp) error))
+	})
+	return _c
+}
+
+func (_c *MockOAuthAppRepository_UpdateByID_Call) Return(_a0 error) *MockOAuthAppRepository_UpdateByID_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockOAuthAppRepository_UpdateByID_Call) RunAndReturn(run func(context.Context, string, func(*modelsoauthapp.OAuthApp) error) error) *MockOAuthAppRepository_UpdateByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewMockOAuthAppRepository creates a new instance of MockOAuthAppRepository. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMockOAuthAppRepository(t interface {

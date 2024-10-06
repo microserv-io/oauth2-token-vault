@@ -13,23 +13,35 @@ import (
 type OAuthAppRepository interface {
 	ListForOwner(ctx context.Context, ownerID string) ([]*oauthapp.OAuthApp, error)
 	Find(ctx context.Context, ownerID string, providerID string) (*oauthapp.OAuthApp, error)
+	UpdateByID(ctx context.Context, id string, updateFunc func(app *oauthapp.OAuthApp) error) error
 }
 
 type ProviderRepository interface {
 	FindByName(ctx context.Context, name string) (*provider.Provider, error)
 }
 
+type TokenSourceFactory interface {
+	NewTokenSource(ctx context.Context, provider provider.Provider, oauthApp oauthapp.OAuthApp) oauth2.TokenSource
+}
+
 type Service struct {
 	oauthAppRepository OAuthAppRepository
 	providerRepository ProviderRepository
+	tokenSourceFactory TokenSourceFactory
 
 	logger *slog.Logger
 }
 
-func NewOAuthAppService(oauthAppRepository OAuthAppRepository, providerRepository ProviderRepository, logger *slog.Logger) *Service {
+func NewService(
+	oauthAppRepository OAuthAppRepository,
+	providerRepository ProviderRepository,
+	tokenSourceFactory TokenSourceFactory,
+	logger *slog.Logger,
+) *Service {
 	return &Service{
 		oauthAppRepository: oauthAppRepository,
 		providerRepository: providerRepository,
+		tokenSourceFactory: tokenSourceFactory,
 		logger:             logger,
 	}
 }
@@ -102,5 +114,43 @@ func (s *Service) CreateAuthorizationURLForProvider(ctx context.Context, provide
 
 	return &AuthorizationURLResponse{
 		URL: parsedURL,
+	}, nil
+}
+
+func (s *Service) RetrieveAccessToken(ctx context.Context, providerID string, ownerID string) (*RetrieveAccessTokenResponse, error) {
+	oauthApp, err := s.oauthAppRepository.Find(ctx, ownerID, providerID)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to find oauth app by id: %w", err)
+	}
+
+	providerObj, err := s.providerRepository.FindByName(ctx, providerID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find provider by name: %w", err)
+	}
+
+	tokenSource := s.tokenSourceFactory.NewTokenSource(ctx, *providerObj, *oauthApp)
+
+	newToken, err := tokenSource.Token()
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve access token: %w", err)
+	}
+
+	oauthApp.AccessToken = newToken.AccessToken
+	oauthApp.RefreshToken = newToken.RefreshToken
+	oauthApp.ExpiresAt = newToken.Expiry
+
+	err = s.oauthAppRepository.UpdateByID(ctx, oauthApp.ID, func(app *oauthapp.OAuthApp) error {
+		app.AccessToken = newToken.AccessToken
+		app.RefreshToken = newToken.RefreshToken
+		app.ExpiresAt = newToken.Expiry
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to update oauth app token: %w", err)
+	}
+
+	return &RetrieveAccessTokenResponse{
+		AccessToken: newToken.AccessToken,
 	}, nil
 }
