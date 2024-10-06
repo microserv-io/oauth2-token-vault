@@ -7,6 +7,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+var _ oauthcredentials.OAuthProviderServiceServer = &Service{}
+
 type Service struct {
 	oauthcredentials.UnimplementedOAuthProviderServiceServer
 }

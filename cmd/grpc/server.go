@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/microserv-io/oauth-credentials-server/internal/app/oauthapp"
 	"github.com/microserv-io/oauth-credentials-server/internal/config"
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
 	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/gorm"
@@ -70,9 +71,15 @@ func main() {
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
+	oauthAppService := oauthapp.NewService(
+		oauthAppRepository,
+		providerRepository,
+		&oauth2.TokenSourceFactory{},
+		logger,
+	)
+
 	server := grpc.NewServer(
-		usecase.NewListOAuthUseCase(oauthAppRepository),
-		usecase.NewGetCredentialsUseCase(oauthAppRepository, providerRepository, &oauth2.TokenSourceFactory{}),
+		oauthAppService,
 		logger,
 	)
 
