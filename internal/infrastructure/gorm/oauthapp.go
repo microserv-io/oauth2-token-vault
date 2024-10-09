@@ -90,6 +90,22 @@ func (r OAuthAppRepository) ListForOwner(ctx context.Context, ownerID string) ([
 	return result, nil
 }
 
+func (r OAuthAppRepository) ListForProvider(ctx context.Context, providerID string) ([]*oauthapp.OAuthApp, error) {
+
+	var apps []*OAuthApp
+
+	if err := r.db.WithContext(ctx).Find(&apps, "provider = ?", providerID).Error; err != nil {
+		return nil, err
+	}
+
+	var result []*oauthapp.OAuthApp
+	for _, app := range apps {
+		result = append(result, app.ToDomain())
+	}
+
+	return result, nil
+}
+
 func (r OAuthAppRepository) Create(ctx context.Context, app *oauthapp.OAuthApp) error {
 	if err := r.db.WithContext(ctx).Create(newOAuthAppFromDomain(app)).Error; err != nil {
 		return err
