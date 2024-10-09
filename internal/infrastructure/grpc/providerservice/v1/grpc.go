@@ -3,26 +3,33 @@ package providerservice
 import (
 	"context"
 	"fmt"
-	"github.com/microserv-io/oauth-credentials-server/internal/app/oauthapp"
 	"github.com/microserv-io/oauth-credentials-server/internal/app/provider"
 	"github.com/microserv-io/oauth-credentials-server/pkg/proto/oauthcredentials/v1"
 )
 
 var _ oauthcredentials.OAuthProviderServiceServer = &Service{}
 
+type ProviderService interface {
+	ListProviders(ctx context.Context) (*provider.ListProvidersResponse, error)
+	CreateProvider(ctx context.Context, input *provider.CreateInput, ownerID string) (*provider.CreateProviderResponse, error)
+	Update(ctx context.Context, name string, input *provider.UpdateInput) (*provider.UpdateProviderResponse, error)
+	DeleteProvider(ctx context.Context, id string) error
+}
+
+type ListProviderStream interface {
+	oauthcredentials.OAuthProviderService_ListProvidersServer
+}
+
 type Service struct {
 	oauthcredentials.UnimplementedOAuthProviderServiceServer
-	providerService *provider.Service
-	oauthappService *oauthapp.Service
+	providerService ProviderService
 }
 
 func NewService(
-	providerService *provider.Service,
-	oauthAppService *oauthapp.Service,
+	providerService ProviderService,
 ) *Service {
 	return &Service{
 		providerService: providerService,
-		oauthappService: oauthAppService,
 	}
 }
 
