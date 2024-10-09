@@ -54,9 +54,15 @@ type ProviderRepository struct {
 	db *gorm.DB
 }
 
+func NewProviderRepository(db *gorm.DB) *ProviderRepository {
+	return &ProviderRepository{
+		db: db,
+	}
+}
+
 func (p ProviderRepository) FindByName(ctx context.Context, name string) (*provider.Provider, error) {
 	var providerDao Provider
-	if err := p.db.Where("name = ?", name).First(&providerDao).Error; err != nil {
+	if err := p.db.WithContext(ctx).Where("name = ?", name).First(&providerDao).Error; err != nil {
 		return nil, err
 	}
 
@@ -66,7 +72,7 @@ func (p ProviderRepository) FindByName(ctx context.Context, name string) (*provi
 func (p ProviderRepository) List(ctx context.Context) ([]*provider.Provider, error) {
 	providerDaos := make([]Provider, 0)
 
-	if err := p.db.Find(&providerDaos).Error; err != nil {
+	if err := p.db.WithContext(ctx).Find(&providerDaos).Error; err != nil {
 		return nil, err
 	}
 
@@ -81,15 +87,27 @@ func (p ProviderRepository) List(ctx context.Context) ([]*provider.Provider, err
 func (p ProviderRepository) Create(ctx context.Context, provider *provider.Provider) error {
 	providerDao := newProviderFromDomain(provider)
 
-	if err := p.db.Create(providerDao).Error; err != nil {
+	if err := p.db.WithContext(ctx).Create(providerDao).Error; err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func NewProviderRepository(db *gorm.DB) *ProviderRepository {
-	return &ProviderRepository{
-		db: db,
+func (p ProviderRepository) Delete(ctx context.Context, name string) error {
+	if err := p.db.WithContext(ctx).Where("name = ?", name).Delete(&Provider{}).Error; err != nil {
+		return err
 	}
+
+	return nil
+}
+
+func (p ProviderRepository) Update(ctx context.Context, provider *provider.Provider) error {
+	providerDao := newProviderFromDomain(provider)
+
+	if err := p.db.WithContext(ctx).Save(providerDao).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

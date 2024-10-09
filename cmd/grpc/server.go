@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/microserv-io/oauth-credentials-server/internal/app/oauthapp"
+	"github.com/microserv-io/oauth-credentials-server/internal/app/provider"
 	"github.com/microserv-io/oauth-credentials-server/internal/config"
-	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
+	domainProvider "github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
 	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/gorm"
 	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/grpc"
 	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/oauth2"
@@ -48,9 +49,9 @@ func main() {
 	oauthAppRepository := gorm.NewOAuthAppRepository(db)
 	providerRepository := gorm.NewProviderRepository(db)
 
-	var providers []*provider.Provider
+	var providers []*domainProvider.Provider
 	for _, p := range configObj.Providers {
-		providers = append(providers, &provider.Provider{
+		providers = append(providers, &domainProvider.Provider{
 			Name:         p.Name,
 			ClientID:     p.ClientID,
 			ClientSecret: p.ClientSecret,
@@ -78,8 +79,15 @@ func main() {
 		logger,
 	)
 
+	providerService := provider.NewService(
+		providerRepository,
+		oauthAppRepository,
+		nil,
+	)
+
 	server := grpc.NewServer(
 		oauthAppService,
+		providerService,
 		logger,
 	)
 
