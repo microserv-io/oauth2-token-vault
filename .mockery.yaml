@@ -9,3 +9,6 @@ packages:
   github.com/microserv-io/oauth-credentials-server/internal/app/oauthapp:
     config:
       recursive: true
+  github.com/microserv-io/oauth-credentials-server/internal/app/provider:
+    config:
+      recursive: true
