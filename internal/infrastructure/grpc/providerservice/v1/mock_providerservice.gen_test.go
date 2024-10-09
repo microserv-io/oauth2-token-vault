@@ -187,12 +187,12 @@ func (_c *MockProviderService_ListProviders_Call) RunAndReturn(run func(context.
 	return _c
 }
 
-// Update provides a mock function with given fields: ctx, name, input
-func (_m *MockProviderService) Update(ctx context.Context, name string, input *provider.UpdateInput) (*provider.UpdateProviderResponse, error) {
+// UpdateProvider provides a mock function with given fields: ctx, name, input
+func (_m *MockProviderService) UpdateProvider(ctx context.Context, name string, input *provider.UpdateInput) (*provider.UpdateProviderResponse, error) {
 	ret := _m.Called(ctx, name, input)
 
 	if len(ret) == 0 {
-		panic("no return value specified for Update")
+		panic("no return value specified for UpdateProvider")
 	}
 
 	var r0 *provider.UpdateProviderResponse
@@ -217,32 +217,32 @@ func (_m *MockProviderService) Update(ctx context.Context, name string, input *p
 	return r0, r1
 }
 
-// MockProviderService_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
-type MockProviderService_Update_Call struct {
+// MockProviderService_UpdateProvider_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateProvider'
+type MockProviderService_UpdateProvider_Call struct {
 	*mock.Call
 }
 
-// Update is a helper method to define mock.On call
+// UpdateProvider is a helper method to define mock.On call
 //   - ctx context.Context
 //   - name string
 //   - input *provider.UpdateInput
-func (_e *MockProviderService_Expecter) Update(ctx interface{}, name interface{}, input interface{}) *MockProviderService_Update_Call {
-	return &MockProviderService_Update_Call{Call: _e.mock.On("Update", ctx, name, input)}
+func (_e *MockProviderService_Expecter) UpdateProvider(ctx interface{}, name interface{}, input interface{}) *MockProviderService_UpdateProvider_Call {
+	return &MockProviderService_UpdateProvider_Call{Call: _e.mock.On("UpdateProvider", ctx, name, input)}
 }
 
-func (_c *MockProviderService_Update_Call) Run(run func(ctx context.Context, name string, input *provider.UpdateInput)) *MockProviderService_Update_Call {
+func (_c *MockProviderService_UpdateProvider_Call) Run(run func(ctx context.Context, name string, input *provider.UpdateInput)) *MockProviderService_UpdateProvider_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string), args[2].(*provider.UpdateInput))
 	})
 	return _c
 }
 
-func (_c *MockProviderService_Update_Call) Return(_a0 *provider.UpdateProviderResponse, _a1 error) *MockProviderService_Update_Call {
+func (_c *MockProviderService_UpdateProvider_Call) Return(_a0 *provider.UpdateProviderResponse, _a1 error) *MockProviderService_UpdateProvider_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockProviderService_Update_Call) RunAndReturn(run func(context.Context, string, *provider.UpdateInput) (*provider.UpdateProviderResponse, error)) *MockProviderService_Update_Call {
+func (_c *MockProviderService_UpdateProvider_Call) RunAndReturn(run func(context.Context, string, *provider.UpdateInput) (*provider.UpdateProviderResponse, error)) *MockProviderService_UpdateProvider_Call {
 	_c.Call.Return(run)
 	return _c
 }

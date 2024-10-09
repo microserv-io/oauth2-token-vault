@@ -294,7 +294,7 @@ func TestService_UpdateProvider(t *testing.T) {
 			}
 
 			tt.mockSetup(mockProviderRepo, mockEncryptor)
-			resp, err := service.Update(context.Background(), "provider1", tt.input)
+			resp, err := service.UpdateProvider(context.Background(), "provider1", tt.input)
 			if tt.expectedError != nil {
 				assert.EqualError(t, err, tt.expectedError.Error())
 			} else {

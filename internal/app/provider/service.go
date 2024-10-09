@@ -130,8 +130,8 @@ func (s *Service) CreateProvider(ctx context.Context, input *CreateInput, source
 	}, nil
 }
 
-// Update updates a provider by name.
-func (s *Service) Update(ctx context.Context, name string, input *UpdateInput) (*UpdateProviderResponse, error) {
+// UpdateProvider updates a provider by name.
+func (s *Service) UpdateProvider(ctx context.Context, name string, input *UpdateInput) (*UpdateProviderResponse, error) {
 	providerObj, err := s.providerRepository.FindByName(ctx, name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find provider by name: %w", err)

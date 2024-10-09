@@ -12,7 +12,7 @@ var _ oauthcredentials.OAuthProviderServiceServer = &Service{}
 type ProviderService interface {
 	ListProviders(ctx context.Context) (*provider.ListProvidersResponse, error)
 	CreateProvider(ctx context.Context, input *provider.CreateInput, ownerID string) (*provider.CreateProviderResponse, error)
-	Update(ctx context.Context, name string, input *provider.UpdateInput) (*provider.UpdateProviderResponse, error)
+	UpdateProvider(ctx context.Context, name string, input *provider.UpdateInput) (*provider.UpdateProviderResponse, error)
 	DeleteProvider(ctx context.Context, id string) error
 }
 
@@ -78,7 +78,7 @@ func (s Service) CreateProvider(ctx context.Context, oauthProvider *oauthcredent
 	}, nil
 }
 func (s Service) UpdateProvider(ctx context.Context, oauthProvider *oauthcredentials.UpdateProviderRequest) (*oauthcredentials.UpdateProviderResponse, error) {
-	resp, err := s.providerService.Update(ctx, oauthProvider.Name, &provider.UpdateInput{
+	resp, err := s.providerService.UpdateProvider(ctx, oauthProvider.Name, &provider.UpdateInput{
 		ClientID:     oauthProvider.ClientId,
 		ClientSecret: oauthProvider.ClientSecret,
 		RedirectURI:  oauthProvider.RedirectUri,
