@@ -1,6 +1,7 @@
 package providerservice
 
 import (
+	"context"
 	"errors"
 	"github.com/stretchr/testify/mock"
 	"testing"
@@ -51,7 +52,7 @@ func TestService_ListProviders(t *testing.T) {
 			s := NewService(mockProviderService)
 			stream := NewMockListProviderStream(t)
 
-			stream.EXPECT().Context().Return(nil)
+			stream.EXPECT().Context().Return(context.TODO())
 
 			if tt.expectedResp != nil {
 				stream.EXPECT().Send(tt.expectedResp).Return(nil)
