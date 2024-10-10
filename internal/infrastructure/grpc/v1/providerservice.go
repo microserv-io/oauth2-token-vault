@@ -1,4 +1,4 @@
-package providerservice
+package v1
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"github.com/microserv-io/oauth-credentials-server/pkg/proto/oauthcredentials/v1"
 )
 
-var _ oauthcredentials.OAuthProviderServiceServer = &Service{}
+var _ oauthcredentials.OAuthProviderServiceServer = &ProviderServiceGRPC{}
 
 type ProviderService interface {
 	ListProviders(ctx context.Context) (*provider.ListProvidersResponse, error)
@@ -20,20 +20,20 @@ type ListProviderStream interface {
 	oauthcredentials.OAuthProviderService_ListProvidersServer
 }
 
-type Service struct {
+type ProviderServiceGRPC struct {
 	oauthcredentials.UnimplementedOAuthProviderServiceServer
 	providerService ProviderService
 }
 
-func NewService(
+func NewProviderServiceGRPC(
 	providerService ProviderService,
-) *Service {
-	return &Service{
+) *ProviderServiceGRPC {
+	return &ProviderServiceGRPC{
 		providerService: providerService,
 	}
 }
 
-func (s Service) ListProviders(_ *oauthcredentials.ListProvidersRequest, stream oauthcredentials.OAuthProviderService_ListProvidersServer) error {
+func (s ProviderServiceGRPC) ListProviders(_ *oauthcredentials.ListProvidersRequest, stream oauthcredentials.OAuthProviderService_ListProvidersServer) error {
 	resp, err := s.providerService.ListProviders(stream.Context())
 	if err != nil {
 		return fmt.Errorf("failed to list providers: %w", err)
@@ -58,7 +58,7 @@ func (s Service) ListProviders(_ *oauthcredentials.ListProvidersRequest, stream 
 	return nil
 }
 
-func (s Service) CreateProvider(ctx context.Context, oauthProvider *oauthcredentials.CreateProviderRequest) (*oauthcredentials.CreateProviderResponse, error) {
+func (s ProviderServiceGRPC) CreateProvider(ctx context.Context, oauthProvider *oauthcredentials.CreateProviderRequest) (*oauthcredentials.CreateProviderResponse, error) {
 	resp, err := s.providerService.CreateProvider(ctx, &provider.CreateInput{
 		Name:    oauthProvider.Name,
 		AuthURL: oauthProvider.AuthUrl,
@@ -77,7 +77,7 @@ func (s Service) CreateProvider(ctx context.Context, oauthProvider *oauthcredent
 		},
 	}, nil
 }
-func (s Service) UpdateProvider(ctx context.Context, oauthProvider *oauthcredentials.UpdateProviderRequest) (*oauthcredentials.UpdateProviderResponse, error) {
+func (s ProviderServiceGRPC) UpdateProvider(ctx context.Context, oauthProvider *oauthcredentials.UpdateProviderRequest) (*oauthcredentials.UpdateProviderResponse, error) {
 	resp, err := s.providerService.UpdateProvider(ctx, oauthProvider.Name, &provider.UpdateInput{
 		ClientID:     oauthProvider.ClientId,
 		ClientSecret: oauthProvider.ClientSecret,
@@ -101,7 +101,7 @@ func (s Service) UpdateProvider(ctx context.Context, oauthProvider *oauthcredent
 	}, nil
 }
 
-func (s Service) DeleteProvider(ctx context.Context, oauthProvider *oauthcredentials.DeleteProviderRequest) (*oauthcredentials.DeleteProviderResponse, error) {
+func (s ProviderServiceGRPC) DeleteProvider(ctx context.Context, oauthProvider *oauthcredentials.DeleteProviderRequest) (*oauthcredentials.DeleteProviderResponse, error) {
 	err := s.providerService.DeleteProvider(ctx, oauthProvider.GetId())
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete provider: %w", err)

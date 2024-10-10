@@ -1,4 +1,4 @@
-package providerservice
+package v1
 
 import (
 	"context"
@@ -49,7 +49,7 @@ func TestService_ListProviders(t *testing.T) {
 			mockProviderService := NewMockProviderService(t)
 			tt.mockSetup(mockProviderService)
 
-			s := NewService(mockProviderService)
+			s := NewProviderServiceGRPC(mockProviderService)
 			stream := NewMockListProviderStream(t)
 
 			stream.EXPECT().Context().Return(context.TODO())
@@ -113,7 +113,7 @@ func TestService_CreateProvider(t *testing.T) {
 			mockProviderService := NewMockProviderService(t)
 			tt.mockSetup(mockProviderService)
 
-			s := NewService(mockProviderService)
+			s := NewProviderServiceGRPC(mockProviderService)
 
 			resp, err := s.CreateProvider(context.TODO(), &oauthcredentials.CreateProviderRequest{
 				Name:    "provider1",
@@ -172,7 +172,7 @@ func TestService_UpdateProvider(t *testing.T) {
 			mockProviderService := NewMockProviderService(t)
 			tt.mockSetup(mockProviderService)
 
-			s := NewService(mockProviderService)
+			s := NewProviderServiceGRPC(mockProviderService)
 
 			resp, err := s.UpdateProvider(context.TODO(), &oauthcredentials.UpdateProviderRequest{
 				Name:    "provider1",
@@ -216,7 +216,7 @@ func TestService_DeleteProvider(t *testing.T) {
 			mockProviderService := NewMockProviderService(t)
 			tt.mockSetup(mockProviderService)
 
-			s := NewService(mockProviderService)
+			s := NewProviderServiceGRPC(mockProviderService)
 
 			_, err := s.DeleteProvider(context.TODO(), &oauthcredentials.DeleteProviderRequest{
 				Id: "provider1",
