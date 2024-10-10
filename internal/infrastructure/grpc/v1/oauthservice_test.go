@@ -1,4 +1,4 @@
-package oauthservice
+package v1
 
 import (
 	"context"
@@ -58,7 +58,7 @@ func TestService_ListOAuths(t *testing.T) {
 
 			tt.mockSetup(mockOAuthAppService)
 
-			service := NewService(mockOAuthAppService)
+			service := NewOAuthAppServiceGRPC(mockOAuthAppService)
 
 			stream := NewMockListOAuthsStream(t)
 
@@ -126,7 +126,7 @@ func TestService_GetOAuthByProvider(t *testing.T) {
 
 			tt.mockSetup(mockOAuthAppService)
 
-			service := NewService(mockOAuthAppService)
+			service := NewOAuthAppServiceGRPC(mockOAuthAppService)
 
 			resp, err := service.GetOAuthByProvider(context.Background(), tt.request)
 			if tt.expectedError != nil {
@@ -178,7 +178,7 @@ func TestService_GetOAuthCredentialByProvider(t *testing.T) {
 			mockOAuthAppService := NewMockOAuthAppService(t)
 			tt.mockSetup(mockOAuthAppService)
 
-			service := NewService(mockOAuthAppService)
+			service := NewOAuthAppServiceGRPC(mockOAuthAppService)
 			resp, err := service.GetOAuthCredentialByProvider(context.Background(), tt.request)
 			if tt.expectedError != nil {
 				assert.EqualError(t, err, tt.expectedError.Error())

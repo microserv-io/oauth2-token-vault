@@ -3,8 +3,7 @@ package grpc
 import (
 	"github.com/microserv-io/oauth-credentials-server/internal/app/oauthapp"
 	"github.com/microserv-io/oauth-credentials-server/internal/app/provider"
-	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/grpc/oauthservice/v1"
-	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/grpc/providerservice/v1"
+	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/grpc/v1"
 	"github.com/microserv-io/oauth-credentials-server/pkg/proto/oauthcredentials/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
@@ -23,8 +22,8 @@ func NewServer(
 
 	grpc_health_v1.RegisterHealthServer(server, health.NewServer())
 
-	oauthServiceGrpc := oauthservice.NewService(oauthAppService)
-	providerServiceGrpc := providerservice.NewService(providerService)
+	oauthServiceGrpc := v1.NewOAuthAppServiceGRPC(oauthAppService)
+	providerServiceGrpc := v1.NewProviderServiceGRPC(providerService)
 
 	oauthcredentials.RegisterOAuthServiceServer(server, oauthServiceGrpc)
 	oauthcredentials.RegisterOAuthProviderServiceServer(server, providerServiceGrpc)
