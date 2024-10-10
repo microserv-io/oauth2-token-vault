@@ -5,12 +5,20 @@ import (
 	"time"
 )
 
-type AuthorizationURLResponse struct {
+type CreateAuthorizationURLForProviderResponse struct {
 	URL *url.URL
 }
 
 type RetrieveAccessTokenResponse struct {
 	AccessToken string
+}
+
+type ListOAuthAppsForOwnerResponse struct {
+	Apps []*OAuthApp
+}
+
+type GetOAuthForProviderAndOwnerResponse struct {
+	App *OAuthApp
 }
 
 type OAuthApp struct {

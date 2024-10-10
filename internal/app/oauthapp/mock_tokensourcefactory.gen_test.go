@@ -26,7 +26,7 @@ func (_m *MockTokenSourceFactory) EXPECT() *MockTokenSourceFactory_Expecter {
 }
 
 // NewTokenSource provides a mock function with given fields: ctx, _a1, oauthApp
-func (_m *MockTokenSourceFactory) NewTokenSource(ctx context.Context, _a1 provider.Provider, oauthApp modelsoauthapp.OAuthApp) oauth2.TokenSource {
+func (_m *MockTokenSourceFactory) NewTokenSource(ctx context.Context, _a1 *provider.Provider, oauthApp *modelsoauthapp.OAuthApp) oauth2.TokenSource {
 	ret := _m.Called(ctx, _a1, oauthApp)
 
 	if len(ret) == 0 {
@@ -34,7 +34,7 @@ func (_m *MockTokenSourceFactory) NewTokenSource(ctx context.Context, _a1 provid
 	}
 
 	var r0 oauth2.TokenSource
-	if rf, ok := ret.Get(0).(func(context.Context, provider.Provider, modelsoauthapp.OAuthApp) oauth2.TokenSource); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *provider.Provider, *modelsoauthapp.OAuthApp) oauth2.TokenSource); ok {
 		r0 = rf(ctx, _a1, oauthApp)
 	} else {
 		if ret.Get(0) != nil {
@@ -52,15 +52,15 @@ type MockTokenSourceFactory_NewTokenSource_Call struct {
 
 // NewTokenSource is a helper method to define mock.On call
 //   - ctx context.Context
-//   - _a1 provider.Provider
-//   - oauthApp modelsoauthapp.OAuthApp
+//   - _a1 *provider.Provider
+//   - oauthApp *modelsoauthapp.OAuthApp
 func (_e *MockTokenSourceFactory_Expecter) NewTokenSource(ctx interface{}, _a1 interface{}, oauthApp interface{}) *MockTokenSourceFactory_NewTokenSource_Call {
 	return &MockTokenSourceFactory_NewTokenSource_Call{Call: _e.mock.On("NewTokenSource", ctx, _a1, oauthApp)}
 }
 
-func (_c *MockTokenSourceFactory_NewTokenSource_Call) Run(run func(ctx context.Context, _a1 provider.Provider, oauthApp modelsoauthapp.OAuthApp)) *MockTokenSourceFactory_NewTokenSource_Call {
+func (_c *MockTokenSourceFactory_NewTokenSource_Call) Run(run func(ctx context.Context, _a1 *provider.Provider, oauthApp *modelsoauthapp.OAuthApp)) *MockTokenSourceFactory_NewTokenSource_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(provider.Provider), args[2].(modelsoauthapp.OAuthApp))
+		run(args[0].(context.Context), args[1].(*provider.Provider), args[2].(*modelsoauthapp.OAuthApp))
 	})
 	return _c
 }
@@ -70,7 +70,7 @@ func (_c *MockTokenSourceFactory_NewTokenSource_Call) Return(_a0 oauth2.TokenSou
 	return _c
 }
 
-func (_c *MockTokenSourceFactory_NewTokenSource_Call) RunAndReturn(run func(context.Context, provider.Provider, modelsoauthapp.OAuthApp) oauth2.TokenSource) *MockTokenSourceFactory_NewTokenSource_Call {
+func (_c *MockTokenSourceFactory_NewTokenSource_Call) RunAndReturn(run func(context.Context, *provider.Provider, *modelsoauthapp.OAuthApp) oauth2.TokenSource) *MockTokenSourceFactory_NewTokenSource_Call {
 	_c.Call.Return(run)
 	return _c
 }

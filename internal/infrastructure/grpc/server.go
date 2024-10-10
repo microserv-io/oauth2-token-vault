@@ -23,10 +23,10 @@ func NewServer(
 
 	grpc_health_v1.RegisterHealthServer(server, health.NewServer())
 
-	oauthService := v1.NewService(oauthAppService)
+	oauthServiceGrpc := oauthservice.NewService(oauthAppService)
 	providerServiceGrpc := providerservice.NewService(providerService)
 
-	oauthcredentials.RegisterOAuthServiceServer(server, oauthService)
+	oauthcredentials.RegisterOAuthServiceServer(server, oauthServiceGrpc)
 	oauthcredentials.RegisterOAuthProviderServiceServer(server, providerServiceGrpc)
 
 	reflection.Register(server)

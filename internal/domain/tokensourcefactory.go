@@ -8,5 +8,5 @@ import (
 )
 
 type TokenSourceFactory interface {
-	NewTokenSource(ctx context.Context, provider provider.Provider, oauthApp oauthapp.OAuthApp) oauth2.TokenSource
+	NewTokenSource(ctx context.Context, provider *provider.Provider, oauthApp *oauthapp.OAuthApp) oauth2.TokenSource
 }
