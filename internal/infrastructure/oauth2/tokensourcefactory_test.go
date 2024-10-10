@@ -95,7 +95,7 @@ func TestTokenSourceFactory_NewTokenSource(t *testing.T) {
 			tt.provider.TokenURL = ts.URL
 
 			factory := &TokenSourceFactory{}
-			tokenSource := factory.NewTokenSource(context.Background(), tt.provider, tt.oauthApp)
+			tokenSource := factory.NewTokenSource(context.Background(), &tt.provider, &tt.oauthApp)
 			gotToken, err := tokenSource.Token()
 			if err != nil {
 				t.Fatalf("TokenSource.Token() error = %v", err)

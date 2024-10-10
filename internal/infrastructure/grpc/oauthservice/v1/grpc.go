@@ -1,21 +1,32 @@
-package v1
+package oauthservice
 
 import (
 	"context"
+	"fmt"
 	"github.com/microserv-io/oauth-credentials-server/internal/app/oauthapp"
 	"github.com/microserv-io/oauth-credentials-server/pkg/proto/oauthcredentials/v1"
 )
 
 var _ oauthcredentials.OAuthServiceServer = &Service{}
 
+type OAuthAppService interface {
+	ListOAuthAppsForOwner(ctx context.Context, ownerID string) (*oauthapp.ListOAuthAppsForOwnerResponse, error)
+	GetOAuthForProviderAndOwner(ctx context.Context, providerID, ownerID string) (*oauthapp.GetOAuthForProviderAndOwnerResponse, error)
+	RetrieveAccessToken(ctx context.Context, providerID, ownerID string) (*oauthapp.RetrieveAccessTokenResponse, error)
+}
+
+type ListOAuthsStream interface {
+	oauthcredentials.OAuthService_ListOAuthsServer
+}
+
 type Service struct {
 	oauthcredentials.UnimplementedOAuthServiceServer
 
-	oauthAppService *oauthapp.Service
+	oauthAppService OAuthAppService
 }
 
 func NewService(
-	oauthAppService *oauthapp.Service,
+	oauthAppService OAuthAppService,
 ) *Service {
 
 	service := Service{
@@ -26,12 +37,12 @@ func NewService(
 }
 
 func (s Service) ListOAuths(request *oauthcredentials.ListOAuthsRequest, server oauthcredentials.OAuthService_ListOAuthsServer) error {
-	oauthApps, err := s.oauthAppService.ListOAuthsForOwner(server.Context(), request.GetOwner())
+	oauthApps, err := s.oauthAppService.ListOAuthAppsForOwner(server.Context(), request.GetOwner())
 	if err != nil {
 		return err
 	}
 
-	for _, oauthApp := range oauthApps {
+	for _, oauthApp := range oauthApps.Apps {
 
 		if err := server.Send(&oauthcredentials.ListOAuthsResponse{Oauths: []*oauthcredentials.OAuth{
 			{
@@ -48,13 +59,13 @@ func (s Service) ListOAuths(request *oauthcredentials.ListOAuthsRequest, server 
 	return nil
 }
 
-func (s Service) GetOAuthByID(ctx context.Context, request *oauthcredentials.GetOAuthByIDRequest) (*oauthcredentials.GetOAuthByIDResponse, error) {
+func (s Service) GetOAuthByID(_ context.Context, _ *oauthcredentials.GetOAuthByIDRequest) (*oauthcredentials.GetOAuthByIDResponse, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
 func (s Service) GetOAuthByProvider(ctx context.Context, request *oauthcredentials.GetOAuthByProviderRequest) (*oauthcredentials.GetOAuthByProviderResponse, error) {
-	oauthApp, err := s.oauthAppService.GetOAuthForProviderAndOwner(ctx, request.GetProvider(), request.GetOwner())
+	resp, err := s.oauthAppService.GetOAuthForProviderAndOwner(ctx, request.GetProvider(), request.GetOwner())
 
 	if err != nil {
 		return nil, err
@@ -62,15 +73,21 @@ func (s Service) GetOAuthByProvider(ctx context.Context, request *oauthcredentia
 
 	return &oauthcredentials.GetOAuthByProviderResponse{
 		Oauth: &oauthcredentials.OAuth{
-			Id:       oauthApp.ID,
-			Owner:    oauthApp.OwnerID,
-			Provider: oauthApp.ProviderID,
-			Scopes:   oauthApp.Scopes,
+			Id:       resp.App.ID,
+			Owner:    resp.App.OwnerID,
+			Provider: resp.App.ProviderID,
+			Scopes:   resp.App.Scopes,
 		},
 	}, nil
 }
 
 func (s Service) GetOAuthCredentialByProvider(ctx context.Context, request *oauthcredentials.GetOAuthCredentialByProviderRequest) (*oauthcredentials.GetOAuthCredentialByProviderResponse, error) {
-	//TODO implement me
-	panic("implement	me")
+	resp, err := s.oauthAppService.RetrieveAccessToken(ctx, request.GetProvider(), request.GetOwner())
+	if err != nil {
+		return nil, fmt.Errorf("could not get oauth credentials: %w", err)
+	}
+
+	return &oauthcredentials.GetOAuthCredentialByProviderResponse{
+		AccessToken: resp.AccessToken,
+	}, nil
 }

@@ -3,6 +3,7 @@ package oauthapp
 import (
 	"context"
 	"fmt"
+	"github.com/microserv-io/oauth-credentials-server/internal/domain"
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/oauthapp"
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
 	"golang.org/x/oauth2"
@@ -11,17 +12,15 @@ import (
 )
 
 type OAuthAppRepository interface {
-	ListForOwner(ctx context.Context, ownerID string) ([]*oauthapp.OAuthApp, error)
-	Find(ctx context.Context, ownerID string, providerID string) (*oauthapp.OAuthApp, error)
-	UpdateByID(ctx context.Context, id string, updateFunc func(app *oauthapp.OAuthApp) error) error
+	oauthapp.Repository
 }
 
 type ProviderRepository interface {
-	FindByName(ctx context.Context, name string) (*provider.Provider, error)
+	provider.Repository
 }
 
 type TokenSourceFactory interface {
-	NewTokenSource(ctx context.Context, provider provider.Provider, oauthApp oauthapp.OAuthApp) oauth2.TokenSource
+	domain.TokenSourceFactory
 }
 
 type Service struct {
@@ -47,16 +46,18 @@ func NewService(
 }
 
 // ListOAuthsForOwner lists all oauth apps for a given owner
-func (s *Service) ListOAuthsForOwner(ctx context.Context, ownerID string) ([]*OAuthApp, error) {
+func (s *Service) ListOAuthAppsForOwner(ctx context.Context, ownerID string) (*ListOAuthAppsForOwnerResponse, error) {
 	oauthApps, err := s.oauthAppRepository.ListForOwner(ctx, ownerID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list oauth apps for owner: %w", err)
 	}
 
-	apps := make([]*OAuthApp, 0, len(oauthApps))
+	response := &ListOAuthAppsForOwnerResponse{
+		Apps: make([]*OAuthApp, 0, len(oauthApps)),
+	}
 
 	for _, app := range oauthApps {
-		apps = append(apps, &OAuthApp{
+		response.Apps = append(response.Apps, &OAuthApp{
 			ID:         app.ID,
 			OwnerID:    app.OwnerID,
 			ProviderID: app.Provider,
@@ -64,24 +65,26 @@ func (s *Service) ListOAuthsForOwner(ctx context.Context, ownerID string) ([]*OA
 		})
 	}
 
-	return apps, nil
+	return response, nil
 }
 
-func (s *Service) GetOAuthForProviderAndOwner(ctx context.Context, providerID string, ownerID string) (*OAuthApp, error) {
+func (s *Service) GetOAuthForProviderAndOwner(ctx context.Context, providerID string, ownerID string) (*GetOAuthForProviderAndOwnerResponse, error) {
 	oauthApp, err := s.oauthAppRepository.Find(ctx, ownerID, providerID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get oauth app by id: %w", err)
 	}
 
-	return &OAuthApp{
-		ID:         oauthApp.ID,
-		OwnerID:    oauthApp.OwnerID,
-		ProviderID: oauthApp.Provider,
-		Scopes:     oauthApp.Scopes,
+	return &GetOAuthForProviderAndOwnerResponse{
+		App: &OAuthApp{
+			ID:         oauthApp.ID,
+			OwnerID:    oauthApp.OwnerID,
+			ProviderID: oauthApp.Provider,
+			Scopes:     oauthApp.Scopes,
+		},
 	}, nil
 }
 
-func (s *Service) CreateAuthorizationURLForProvider(ctx context.Context, providerID string, scopes []string, state string) (*AuthorizationURLResponse, error) {
+func (s *Service) CreateAuthorizationURLForProvider(ctx context.Context, providerID string, scopes []string, state string) (*CreateAuthorizationURLForProviderResponse, error) {
 	providerObj, err := s.providerRepository.FindByName(ctx, providerID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find provider by name: %w", err)
@@ -112,7 +115,7 @@ func (s *Service) CreateAuthorizationURLForProvider(ctx context.Context, provide
 		return nil, fmt.Errorf("failed to parse redirect url: %w", err)
 	}
 
-	return &AuthorizationURLResponse{
+	return &CreateAuthorizationURLForProviderResponse{
 		URL: parsedURL,
 	}, nil
 }
@@ -129,7 +132,7 @@ func (s *Service) RetrieveAccessToken(ctx context.Context, providerID string, ow
 		return nil, fmt.Errorf("failed to find provider by name: %w", err)
 	}
 
-	tokenSource := s.tokenSourceFactory.NewTokenSource(ctx, *providerObj, *oauthApp)
+	tokenSource := s.tokenSourceFactory.NewTokenSource(ctx, providerObj, oauthApp)
 
 	newToken, err := tokenSource.Token()
 	if err != nil {

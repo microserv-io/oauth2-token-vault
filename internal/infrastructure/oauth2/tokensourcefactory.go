@@ -13,7 +13,7 @@ var _ domain.TokenSourceFactory = &TokenSourceFactory{}
 type TokenSourceFactory struct {
 }
 
-func (t *TokenSourceFactory) NewTokenSource(ctx context.Context, provider provider.Provider, oauthApp oauthapp.OAuthApp) oauth2.TokenSource {
+func (t *TokenSourceFactory) NewTokenSource(ctx context.Context, provider *provider.Provider, oauthApp *oauthapp.OAuthApp) oauth2.TokenSource {
 	client := oauth2.Config{
 		ClientID:     provider.ClientID,
 		ClientSecret: provider.ClientSecret,

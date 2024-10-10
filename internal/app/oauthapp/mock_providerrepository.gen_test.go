@@ -22,6 +22,100 @@ func (_m *MockProviderRepository) EXPECT() *MockProviderRepository_Expecter {
 	return &MockProviderRepository_Expecter{mock: &_m.Mock}
 }
 
+// Create provides a mock function with given fields: ctx, _a1
+func (_m *MockProviderRepository) Create(ctx context.Context, _a1 *provider.Provider) error {
+	ret := _m.Called(ctx, _a1)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Create")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *provider.Provider) error); ok {
+		r0 = rf(ctx, _a1)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// MockProviderRepository_Create_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Create'
+type MockProviderRepository_Create_Call struct {
+	*mock.Call
+}
+
+// Create is a helper method to define mock.On call
+//   - ctx context.Context
+//   - _a1 *provider.Provider
+func (_e *MockProviderRepository_Expecter) Create(ctx interface{}, _a1 interface{}) *MockProviderRepository_Create_Call {
+	return &MockProviderRepository_Create_Call{Call: _e.mock.On("Create", ctx, _a1)}
+}
+
+func (_c *MockProviderRepository_Create_Call) Run(run func(ctx context.Context, _a1 *provider.Provider)) *MockProviderRepository_Create_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(*provider.Provider))
+	})
+	return _c
+}
+
+func (_c *MockProviderRepository_Create_Call) Return(_a0 error) *MockProviderRepository_Create_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockProviderRepository_Create_Call) RunAndReturn(run func(context.Context, *provider.Provider) error) *MockProviderRepository_Create_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Delete provides a mock function with given fields: ctx, name
+func (_m *MockProviderRepository) Delete(ctx context.Context, name string) error {
+	ret := _m.Called(ctx, name)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, name)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// MockProviderRepository_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type MockProviderRepository_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+func (_e *MockProviderRepository_Expecter) Delete(ctx interface{}, name interface{}) *MockProviderRepository_Delete_Call {
+	return &MockProviderRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, name)}
+}
+
+func (_c *MockProviderRepository_Delete_Call) Run(run func(ctx context.Context, name string)) *MockProviderRepository_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockProviderRepository_Delete_Call) Return(_a0 error) *MockProviderRepository_Delete_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockProviderRepository_Delete_Call) RunAndReturn(run func(context.Context, string) error) *MockProviderRepository_Delete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // FindByName provides a mock function with given fields: ctx, name
 func (_m *MockProviderRepository) FindByName(ctx context.Context, name string) (*provider.Provider, error) {
 	ret := _m.Called(ctx, name)
@@ -77,6 +171,111 @@ func (_c *MockProviderRepository_FindByName_Call) Return(_a0 *provider.Provider,
 }
 
 func (_c *MockProviderRepository_FindByName_Call) RunAndReturn(run func(context.Context, string) (*provider.Provider, error)) *MockProviderRepository_FindByName_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// List provides a mock function with given fields: ctx
+func (_m *MockProviderRepository) List(ctx context.Context) ([]*provider.Provider, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for List")
+	}
+
+	var r0 []*provider.Provider
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) ([]*provider.Provider, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) []*provider.Provider); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*provider.Provider)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockProviderRepository_List_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'List'
+type MockProviderRepository_List_Call struct {
+	*mock.Call
+}
+
+// List is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockProviderRepository_Expecter) List(ctx interface{}) *MockProviderRepository_List_Call {
+	return &MockProviderRepository_List_Call{Call: _e.mock.On("List", ctx)}
+}
+
+func (_c *MockProviderRepository_List_Call) Run(run func(ctx context.Context)) *MockProviderRepository_List_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *MockProviderRepository_List_Call) Return(_a0 []*provider.Provider, _a1 error) *MockProviderRepository_List_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockProviderRepository_List_Call) RunAndReturn(run func(context.Context) ([]*provider.Provider, error)) *MockProviderRepository_List_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Update provides a mock function with given fields: ctx, _a1
+func (_m *MockProviderRepository) Update(ctx context.Context, _a1 *provider.Provider) error {
+	ret := _m.Called(ctx, _a1)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *provider.Provider) error); ok {
+		r0 = rf(ctx, _a1)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// MockProviderRepository_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type MockProviderRepository_Update_Call struct {
+	*mock.Call
+}
+
+// Update is a helper method to define mock.On call
+//   - ctx context.Context
+//   - _a1 *provider.Provider
+func (_e *MockProviderRepository_Expecter) Update(ctx interface{}, _a1 interface{}) *MockProviderRepository_Update_Call {
+	return &MockProviderRepository_Update_Call{Call: _e.mock.On("Update", ctx, _a1)}
+}
+
+func (_c *MockProviderRepository_Update_Call) Run(run func(ctx context.Context, _a1 *provider.Provider)) *MockProviderRepository_Update_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(*provider.Provider))
+	})
+	return _c
+}
+
+func (_c *MockProviderRepository_Update_Call) Return(_a0 error) *MockProviderRepository_Update_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockProviderRepository_Update_Call) RunAndReturn(run func(context.Context, *provider.Provider) error) *MockProviderRepository_Update_Call {
 	_c.Call.Return(run)
 	return _c
 }
