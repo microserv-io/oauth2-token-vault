@@ -1,104 +1,19 @@
 package main
 
 import (
-	"context"
-	"fmt"
-	"github.com/microserv-io/oauth-credentials-server/internal/app/oauthapp"
-	"github.com/microserv-io/oauth-credentials-server/internal/app/provider"
-	"github.com/microserv-io/oauth-credentials-server/internal/config"
-	domainProvider "github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
-	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/gorm"
-	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/grpc"
-	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/oauth2"
-	"github.com/microserv-io/oauth-credentials-server/internal/usecase"
+	"github.com/microserv-io/oauth-credentials-server/internal"
 	"log"
-	"log/slog"
-	"net"
-	"os"
 )
 
 const CfgPath = "/cfg"
 
 func main() {
-
-	configObj, err := config.NewConfig(CfgPath, "config")
+	application, err := internal.NewApplication(CfgPath)
 	if err != nil {
-		panic(err)
+		log.Panicf("failed to create application: %v", err)
 	}
 
-	log.Printf("Configuration loaded from file.")
-
-	db, err := gorm.Open(
-		fmt.Sprintf(
-			"host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
-			configObj.Database.Host,
-			configObj.Database.User,
-			configObj.Database.Password,
-			configObj.Database.Name,
-			configObj.Database.Port,
-		),
-		true,
-		6,
-		5,
-		nil,
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	oauthAppRepository := gorm.NewOAuthAppRepository(db)
-	providerRepository := gorm.NewProviderRepository(db)
-
-	var providers []*domainProvider.Provider
-	for _, p := range configObj.Providers {
-		providers = append(providers, &domainProvider.Provider{
-			Name:         p.Name,
-			ClientID:     p.ClientID,
-			ClientSecret: p.ClientSecret,
-			RedirectURL:  p.RedirectURL,
-			AuthURL:      p.AuthURL,
-			TokenURL:     p.TokenURL,
-			Scopes:       p.Scopes,
-		})
-	}
-
-	if err := usecase.NewLoadProvidersUseCase(
-		providerRepository,
-	).Execute(
-		context.Background(), providers,
-	); err != nil {
-		log.Fatalf("[STARTUP] failed to load providers: %v", err)
-	}
-
-	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
-
-	oauthAppService := oauthapp.NewService(
-		oauthAppRepository,
-		providerRepository,
-		&oauth2.TokenSourceFactory{},
-		logger,
-	)
-
-	providerService := provider.NewService(
-		providerRepository,
-		oauthAppRepository,
-		nil,
-	)
-
-	server := grpc.NewServer(
-		oauthAppService,
-		providerService,
-		logger,
-	)
-
-	log.Printf("Starting server on port 8080")
-
-	lis, err := net.Listen("tcp", ":8080")
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-
-	if err := server.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+	if err := application.Run(""); err != nil {
+		log.Panicf("failed to run application: %v", err)
 	}
 }
