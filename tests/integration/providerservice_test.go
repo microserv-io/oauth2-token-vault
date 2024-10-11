@@ -9,6 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
@@ -26,7 +28,9 @@ func TestCreateProvider(t *testing.T) {
 
 	// Create a new provider
 	req := &oauthcredentials.CreateProviderRequest{
-		Name: "Test Provider",
+		Name:     "Test Provider",
+		AuthUrl:  "https://example.com/auth",
+		TokenUrl: "https://example.com/token",
 		// Add other necessary fields here
 	}
 
@@ -37,6 +41,8 @@ func TestCreateProvider(t *testing.T) {
 
 	assert.NotNil(t, resp)
 	assert.Equal(t, "Test Provider", resp.GetOauthProvider().GetName())
+	assert.Equal(t, "https://example.com/auth", resp.GetOauthProvider().GetAuthUrl())
+	assert.Equal(t, "https://example.com/token", resp.GetOauthProvider().GetTokenUrl())
 }
 
 func TestListProviders(t *testing.T) {
@@ -85,8 +91,9 @@ func TestUpdateProvider(t *testing.T) {
 
 	// Update a provider
 	req := &oauthcredentials.UpdateProviderRequest{
-		Name:    "Test Provider",
-		AuthUrl: "https://example.com/auth",
+		Name:     "Test Provider",
+		AuthUrl:  "https://example.com/auth",
+		TokenUrl: "https://example.com/token",
 		// Add other necessary fields here
 	}
 
@@ -98,6 +105,55 @@ func TestUpdateProvider(t *testing.T) {
 	assert.NotNil(t, resp)
 	assert.Equal(t, "Test Provider", resp.GetOauthProvider().GetName())
 	assert.Equal(t, "https://example.com/auth", resp.GetOauthProvider().GetAuthUrl())
+}
+
+func TestExchangeAuthorizationCode(t *testing.T) {
+	// Set up the gRPC connection
+	conn, err := grpc.NewClient(fmt.Sprintf("localhost:%s", ServerPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		t.Fatalf("Failed to connect to gRPC server: %v", err)
+	}
+	defer conn.Close()
+
+	client := oauthcredentials.NewOAuthProviderServiceClient(conn)
+
+	// Create a mock HTTP server
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		if _, err := w.Write([]byte(`{
+					"access_token": "new_access_token",
+					"token_type": "Bearer",
+					"refresh_token": "new_refresh_token",
+					"expires_in": 3600
+				}`)); err != nil {
+			t.Fatalf("failed to write response: %v", err)
+		}
+	}))
+
+	defer ts.Close()
+
+	_, err = client.CreateProvider(context.Background(), &oauthcredentials.CreateProviderRequest{
+		Name:     "Test Exchange Provider",
+		TokenUrl: ts.URL,
+	})
+	if err != nil {
+		t.Fatalf("CreateProvider failed: %v", err)
+	}
+
+	// Exchange an authorization code
+	req := &oauthcredentials.ExchangeAuthorizationCodeRequest{
+		Provider: "Test Exchange Provider",
+		Code:     "test-code",
+		Owner:    "test-owner",
+	}
+
+	resp, err := client.ExchangeAuthorizationCode(context.Background(), req)
+	if err != nil {
+		t.Fatalf("ExchangeAuthorizationCode failed: %v", err)
+	}
+
+	assert.NotNil(t, resp)
 }
 
 func TestDeleteProvider(t *testing.T) {
@@ -141,5 +197,7 @@ func TestDeleteProvider(t *testing.T) {
 		}
 	}
 
-	assert.Empty(t, providers)
+	for _, p := range providers {
+		assert.NotEqual(t, "Test Provider", p.GetName())
+	}
 }

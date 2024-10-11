@@ -3,9 +3,9 @@ package oauthapp
 import (
 	"context"
 	"fmt"
-	"github.com/microserv-io/oauth-credentials-server/internal/domain"
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/oauthapp"
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
+	oauth3 "github.com/microserv-io/oauth-credentials-server/internal/domain/oauth2"
 	"golang.org/x/oauth2"
 	"log/slog"
 	"net/url"
@@ -20,7 +20,7 @@ type ProviderRepository interface {
 }
 
 type TokenSourceFactory interface {
-	domain.TokenSourceFactory
+	oauth3.TokenSourceFactory
 }
 
 type Service struct {

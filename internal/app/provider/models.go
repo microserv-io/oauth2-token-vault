@@ -48,3 +48,9 @@ type ListProvidersResponse struct {
 type GetProviderByNameResponse struct {
 	Provider *Provider
 }
+
+type ExchangeAuthorizationCodeInput struct {
+	Provider string
+	OwnerID  string
+	Code     string
+}

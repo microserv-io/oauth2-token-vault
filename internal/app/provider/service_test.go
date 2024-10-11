@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/oauthapp"
+	"github.com/microserv-io/oauth-credentials-server/internal/domain/oauth2"
 	"testing"
 	"time"
 
@@ -16,8 +17,9 @@ func TestNewService(t *testing.T) {
 	mockProviderRepo := NewMockProviderRepository(t)
 	mockOAuthAppRepo := NewMockOAuthAppRepository(t)
 	mockEncryptor := NewMockEncryptor(t)
+	mockOAuth2Client := NewMockOAuth2Client(t)
 
-	service := NewService(mockProviderRepo, mockOAuthAppRepo, mockEncryptor)
+	service := NewService(mockProviderRepo, mockOAuthAppRepo, mockEncryptor, mockOAuth2Client)
 	assert.NotNil(t, service)
 }
 
@@ -355,6 +357,168 @@ func TestService_DeleteProvider(t *testing.T) {
 
 			tt.mockSetup(mockProviderRepo, mockOAuthAppRepo)
 			err := service.DeleteProvider(context.Background(), "provider1")
+			if tt.expectedError != nil {
+				assert.EqualError(t, err, tt.expectedError.Error())
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestService_ExchangeAuthorizationCode(t *testing.T) {
+	tests := []struct {
+		name          string
+		mockSetup     func(mockProviderRepo *MockProviderRepository, mockOAuth2Client *MockOAuth2Client, oauthAppRepo *MockOAuthAppRepository)
+		input         *ExchangeAuthorizationCodeInput
+		expectedError error
+	}{
+		{
+			name: "success",
+			mockSetup: func(mockProviderRepo *MockProviderRepository, mockOAuth2Client *MockOAuth2Client, oauthAppRepo *MockOAuthAppRepository) {
+				mockProvider := &provider.Provider{
+					Name:         "provider1",
+					AuthURL:      "http://auth.url",
+					TokenURL:     "http://token.url",
+					Scopes:       []string{"scope1", "scope2"},
+					RedirectURL:  "http://redirect.url",
+					ClientID:     "client_id",
+					ClientSecret: "client_secret",
+				}
+				mockProviderRepo.EXPECT().FindByName(mock.Anything, "provider1").Return(mockProvider, nil)
+
+				mockOAuth2Client.EXPECT().Exchange(mock.Anything, &oauth2.Config{
+					ClientID:     mockProvider.ClientID,
+					ClientSecret: mockProvider.ClientSecret,
+					AuthURL:      mockProvider.AuthURL,
+					TokenURL:     mockProvider.TokenURL,
+					RedirectURL:  mockProvider.RedirectURL,
+					Scopes:       mockProvider.Scopes,
+				}, "code").Return(&oauth2.Token{
+					TokenType:    "token_type",
+					AccessToken:  "access_token",
+					RefreshToken: "refresh_token",
+					ExpiresAt:    time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+				}, nil)
+
+				oauthAppRepo.EXPECT().Create(mock.Anything, &oauthapp.OAuthApp{
+					Provider:     mockProvider.Name,
+					OwnerID:      "owner1",
+					Scopes:       mockProvider.Scopes,
+					AccessToken:  "access_token",
+					RefreshToken: "refresh_token",
+					TokenType:    "token_type",
+					ExpiresAt:    time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+				}).Return(nil)
+			},
+			input: &ExchangeAuthorizationCodeInput{
+				Provider: "provider1",
+				OwnerID:  "owner1",
+				Code:     "code",
+			},
+			expectedError: nil,
+		},
+		{
+			name: "error - find provider failure",
+			mockSetup: func(mockProviderRepo *MockProviderRepository, mockOAuth2Client *MockOAuth2Client, oauthAppRepo *MockOAuthAppRepository) {
+				mockProviderRepo.EXPECT().FindByName(mock.Anything, "provider1").Return(nil, errors.New("some error"))
+			},
+			input: &ExchangeAuthorizationCodeInput{
+				Provider: "provider1",
+				OwnerID:  "owner1",
+				Code:     "code",
+			},
+			expectedError: errors.New("failed to find providerObj by name: some error"),
+		},
+		{
+			name: "error - exchange failure",
+			mockSetup: func(mockProviderRepo *MockProviderRepository, mockOAuth2Client *MockOAuth2Client, mockOAuthAppRepo *MockOAuthAppRepository) {
+				mockProvider := &provider.Provider{
+					Name:         "provider1",
+					AuthURL:      "http://auth.url",
+					TokenURL:     "http://token.url",
+					Scopes:       []string{"scope1", "scope2"},
+					RedirectURL:  "http://redirect.url",
+					ClientID:     "client_id",
+					ClientSecret: "client_secret",
+				}
+				mockProviderRepo.EXPECT().FindByName(mock.Anything, "provider1").Return(mockProvider, nil)
+				mockOAuth2Client.EXPECT().Exchange(mock.Anything, &oauth2.Config{
+					ClientID:     mockProvider.ClientID,
+					ClientSecret: mockProvider.ClientSecret,
+					AuthURL:      mockProvider.AuthURL,
+					TokenURL:     mockProvider.TokenURL,
+					RedirectURL:  mockProvider.RedirectURL,
+					Scopes:       mockProvider.Scopes,
+				}, "code").Return(nil, errors.New("some error"))
+			},
+			input: &ExchangeAuthorizationCodeInput{
+				Provider: "provider1",
+				OwnerID:  "owner1",
+				Code:     "code",
+			},
+			expectedError: errors.New("failed to exchange authorization code: some error"),
+		},
+		{
+			name: "error - create oauth app failure",
+			mockSetup: func(mockProviderRepo *MockProviderRepository, mockOAuth2Client *MockOAuth2Client, mockOAuthAppRepo *MockOAuthAppRepository) {
+				mockProvider := &provider.Provider{
+					Name:         "provider1",
+					AuthURL:      "http://auth.url",
+					TokenURL:     "http://token.url",
+					Scopes:       []string{"scope1", "scope2"},
+					RedirectURL:  "http://redirect.url",
+					ClientID:     "client_id",
+					ClientSecret: "client_secret",
+				}
+				mockProviderRepo.EXPECT().FindByName(mock.Anything, "provider1").Return(mockProvider, nil)
+
+				mockOAuth2Client.EXPECT().Exchange(mock.Anything, &oauth2.Config{
+					ClientID:     mockProvider.ClientID,
+					ClientSecret: mockProvider.ClientSecret,
+					AuthURL:      mockProvider.AuthURL,
+					TokenURL:     mockProvider.TokenURL,
+					RedirectURL:  mockProvider.RedirectURL,
+					Scopes:       mockProvider.Scopes,
+				}, "code").Return(&oauth2.Token{
+					TokenType:    "token_type",
+					AccessToken:  "access_token",
+					RefreshToken: "refresh_token",
+					ExpiresAt:    time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+				}, nil)
+
+				mockOAuthAppRepo.EXPECT().Create(mock.Anything, &oauthapp.OAuthApp{
+					Provider:     mockProvider.Name,
+					OwnerID:      "owner1",
+					Scopes:       mockProvider.Scopes,
+					AccessToken:  "access_token",
+					RefreshToken: "refresh_token",
+					TokenType:    "token_type",
+					ExpiresAt:    time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+				}).Return(errors.New("some error"))
+			},
+			input: &ExchangeAuthorizationCodeInput{
+				Provider: "provider1",
+				OwnerID:  "owner1",
+				Code:     "code",
+			},
+			expectedError: errors.New("failed to create oauth app: some error"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockProviderRepo := NewMockProviderRepository(t)
+			mockOAuth2Client := NewMockOAuth2Client(t)
+			mockOAuthAppRepo := NewMockOAuthAppRepository(t)
+			service := &Service{
+				providerRepository: mockProviderRepo,
+				oauth2Client:       mockOAuth2Client,
+				oauthAppRepository: mockOAuthAppRepo,
+			}
+
+			tt.mockSetup(mockProviderRepo, mockOAuth2Client, mockOAuthAppRepo)
+			err := service.ExchangeAuthorizationCode(context.Background(), tt.input)
 			if tt.expectedError != nil {
 				assert.EqualError(t, err, tt.expectedError.Error())
 			} else {

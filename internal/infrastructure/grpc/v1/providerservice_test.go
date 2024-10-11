@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestService_ListProviders(t *testing.T) {
+func TestProviderServiceGRPC_ListProviders(t *testing.T) {
 	tests := []struct {
 		name          string
 		mockSetup     func(mockProviderService *MockProviderService)
@@ -69,7 +69,7 @@ func TestService_ListProviders(t *testing.T) {
 	}
 }
 
-func TestService_CreateProvider(t *testing.T) {
+func TestProviderServiceGRPC_CreateProvider(t *testing.T) {
 	tests := []struct {
 		name          string
 		mockSetup     func(mockProviderService *MockProviderService)
@@ -130,7 +130,7 @@ func TestService_CreateProvider(t *testing.T) {
 	}
 }
 
-func TestService_UpdateProvider(t *testing.T) {
+func TestProviderServiceGRPC_UpdateProvider(t *testing.T) {
 	tests := []struct {
 		name          string
 		mockSetup     func(mockProviderService *MockProviderService)
@@ -189,7 +189,7 @@ func TestService_UpdateProvider(t *testing.T) {
 	}
 }
 
-func TestService_DeleteProvider(t *testing.T) {
+func TestProviderServiceGRPC_DeleteProvider(t *testing.T) {
 	tests := []struct {
 		name          string
 		mockSetup     func(mockProviderService *MockProviderService)
@@ -220,6 +220,52 @@ func TestService_DeleteProvider(t *testing.T) {
 
 			_, err := s.DeleteProvider(context.TODO(), &oauthcredentials.DeleteProviderRequest{
 				Id: "provider1",
+			})
+
+			if tt.expectedError != nil {
+				assert.EqualError(t, err, tt.expectedError.Error())
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestProviderServiceGRPC_ExchangeAuthorizationCode(t *testing.T) {
+	tests := []struct {
+		name          string
+		mockSetup     func(mockProviderService *MockProviderService)
+		expectedError error
+	}{
+		{
+			name: "success",
+			mockSetup: func(mockProviderService *MockProviderService) {
+				mockProviderService.EXPECT().ExchangeAuthorizationCode(mock.Anything, &provider.ExchangeAuthorizationCodeInput{
+					Provider: "provider1",
+				}).Return(nil)
+			},
+			expectedError: nil,
+		},
+		{
+			name: "error",
+			mockSetup: func(mockProviderService *MockProviderService) {
+				mockProviderService.EXPECT().ExchangeAuthorizationCode(mock.Anything, &provider.ExchangeAuthorizationCodeInput{
+					Provider: "provider1",
+				}).Return(errors.New("some error"))
+			},
+			expectedError: errors.New("failed to exchange authorization code: some error"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockProviderService := NewMockProviderService(t)
+			tt.mockSetup(mockProviderService)
+
+			s := NewProviderServiceGRPC(mockProviderService)
+
+			_, err := s.ExchangeAuthorizationCode(context.TODO(), &oauthcredentials.ExchangeAuthorizationCodeRequest{
+				Provider: "provider1",
 			})
 
 			if tt.expectedError != nil {

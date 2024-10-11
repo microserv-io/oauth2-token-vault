@@ -66,8 +66,7 @@ func NewOAuthAppRepository(db *gorm.DB) *OAuthAppRepository {
 func (r OAuthAppRepository) Find(ctx context.Context, ownerID string, id string) (*oauthapp.OAuthApp, error) {
 
 	var app OAuthApp
-
-	if err := r.db.WithContext(ctx).Find(&app, "id = ? AND owner_id = ?", id, ownerID).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("id = ? AND owner_id = ?", id, ownerID).Take(&app).Error; err != nil {
 		return nil, err
 	}
 
@@ -78,7 +77,7 @@ func (r OAuthAppRepository) ListForOwner(ctx context.Context, ownerID string) ([
 
 	var apps []*OAuthApp
 
-	if err := r.db.WithContext(ctx).Find(&apps, "owner_id = ?", ownerID).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("owner_id = ?", ownerID).Find(&apps).Error; err != nil {
 		return nil, err
 	}
 
@@ -94,7 +93,7 @@ func (r OAuthAppRepository) ListForProvider(ctx context.Context, providerID stri
 
 	var apps []*OAuthApp
 
-	if err := r.db.WithContext(ctx).Find(&apps, "provider = ?", providerID).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("provider = ?", providerID).Find(&apps).Error; err != nil {
 		return nil, err
 	}
 
