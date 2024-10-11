@@ -1,4 +1,4 @@
-FROM golang:1.23-alpine AS builder
+FROM golang:1.23-alpine AS prepare
 
 WORKDIR /app/
 
@@ -8,15 +8,21 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o server ./cmd/grpc
-
-FROM builder AS dev
+FROM prepare AS dev
 
 RUN go install github.com/air-verse/air@latest
 
 ENV GOTRACEBACK=all
 
 CMD ["/go/bin/air"]
+
+FROM prepare AS test
+
+CMD ["go", "test", "./...", "-tags", "integration"]
+
+FROM prepare AS builder
+
+RUN go build -o server ./cmd/grpc
 
 FROM alpine:3.20
 
