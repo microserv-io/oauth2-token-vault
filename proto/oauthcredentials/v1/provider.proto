@@ -9,6 +9,7 @@ service OAuthProviderService {
   rpc CreateProvider(CreateProviderRequest) returns (CreateProviderResponse) {}
   rpc UpdateProvider(UpdateProviderRequest) returns (UpdateProviderResponse) {}
   rpc DeleteProvider(DeleteProviderRequest) returns (DeleteProviderResponse) {}
+  rpc ExchangeAuthorizationCode(ExchangeAuthorizationCodeRequest) returns (ExchangeAuthorizationCodeResponse) {}
 }
 
 message ListProvidersRequest {}
@@ -51,6 +52,14 @@ message DeleteProviderRequest {
 }
 
 message DeleteProviderResponse {}
+
+message ExchangeAuthorizationCodeRequest {
+  string provider = 1;
+  string owner = 2;
+  string code = 3;
+}
+
+message ExchangeAuthorizationCodeResponse {}
 
 message OAuthProvider {
   string id = 1;

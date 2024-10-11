@@ -6,6 +6,7 @@ import (
 	"github.com/microserv-io/oauth-credentials-server/internal/domain"
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/oauthapp"
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
+	"github.com/microserv-io/oauth-credentials-server/internal/domain/oauth2"
 )
 
 // Encryptor is an interface for encrypting and decrypting data.
@@ -23,11 +24,17 @@ type OAuthAppRepository interface {
 	oauthapp.Repository
 }
 
+// OAuth2Client is an interface for exchanging authorization codes for tokens.
+type OAuth2Client interface {
+	oauth2.Client
+}
+
 // Service provides provider operations.
 type Service struct {
 	providerRepository ProviderRepository
 	oauthAppRepository OAuthAppRepository
 	encryptor          Encryptor
+	oauth2Client       OAuth2Client
 }
 
 // NewService creates a new provider service.
@@ -35,6 +42,7 @@ func NewService(
 	providerRepository ProviderRepository,
 	oauthAppRepository OAuthAppRepository,
 	encryptor Encryptor,
+	oauth2Client OAuth2Client,
 ) *Service {
 
 	if providerRepository == nil {
@@ -49,10 +57,15 @@ func NewService(
 		panic("encryptor is required")
 	}
 
+	if oauth2Client == nil {
+		panic("oauth2Client is required")
+	}
+
 	return &Service{
 		providerRepository: providerRepository,
 		oauthAppRepository: oauthAppRepository,
 		encryptor:          encryptor,
+		oauth2Client:       oauth2Client,
 	}
 }
 
@@ -180,6 +193,41 @@ func (s *Service) DeleteProvider(ctx context.Context, name string) error {
 
 	if err := s.providerRepository.Delete(ctx, name); err != nil {
 		return fmt.Errorf("failed to delete provider: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Service) ExchangeAuthorizationCode(ctx context.Context, input *ExchangeAuthorizationCodeInput) error {
+	providerObj, err := s.providerRepository.FindByName(ctx, input.Provider)
+	if err != nil {
+		return fmt.Errorf("failed to find providerObj by name: %w", err)
+	}
+
+	token, err := s.oauth2Client.Exchange(ctx, &oauth2.Config{
+		ClientID:     providerObj.ClientID,
+		ClientSecret: providerObj.ClientSecret,
+		AuthURL:      providerObj.AuthURL,
+		TokenURL:     providerObj.TokenURL,
+		RedirectURL:  providerObj.RedirectURL,
+		Scopes:       providerObj.Scopes,
+	}, input.Code)
+	if err != nil {
+		return fmt.Errorf("failed to exchange authorization code: %w", err)
+	}
+
+	oauthApp := oauthapp.OAuthApp{
+		Provider:     providerObj.Name,
+		Scopes:       providerObj.Scopes,
+		AccessToken:  token.AccessToken,
+		RefreshToken: token.RefreshToken,
+		ExpiresAt:    token.ExpiresAt,
+		TokenType:    token.TokenType,
+		OwnerID:      input.OwnerID,
+	}
+
+	if err := s.oauthAppRepository.Create(ctx, &oauthApp); err != nil {
+		return fmt.Errorf("failed to create oauth app: %w", err)
 	}
 
 	return nil

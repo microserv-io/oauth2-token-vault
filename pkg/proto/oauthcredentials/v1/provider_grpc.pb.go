@@ -26,6 +26,7 @@ type OAuthProviderServiceClient interface {
 	CreateProvider(ctx context.Context, in *CreateProviderRequest, opts ...grpc.CallOption) (*CreateProviderResponse, error)
 	UpdateProvider(ctx context.Context, in *UpdateProviderRequest, opts ...grpc.CallOption) (*UpdateProviderResponse, error)
 	DeleteProvider(ctx context.Context, in *DeleteProviderRequest, opts ...grpc.CallOption) (*DeleteProviderResponse, error)
+	ExchangeAuthorizationCode(ctx context.Context, in *ExchangeAuthorizationCodeRequest, opts ...grpc.CallOption) (*ExchangeAuthorizationCodeResponse, error)
 }
 
 type oAuthProviderServiceClient struct {
@@ -95,6 +96,15 @@ func (c *oAuthProviderServiceClient) DeleteProvider(ctx context.Context, in *Del
 	return out, nil
 }
 
+func (c *oAuthProviderServiceClient) ExchangeAuthorizationCode(ctx context.Context, in *ExchangeAuthorizationCodeRequest, opts ...grpc.CallOption) (*ExchangeAuthorizationCodeResponse, error) {
+	out := new(ExchangeAuthorizationCodeResponse)
+	err := c.cc.Invoke(ctx, "/oauthcredentials.v1.OAuthProviderService/ExchangeAuthorizationCode", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OAuthProviderServiceServer is the server API for OAuthProviderService service.
 // All implementations must embed UnimplementedOAuthProviderServiceServer
 // for forward compatibility
@@ -103,6 +113,7 @@ type OAuthProviderServiceServer interface {
 	CreateProvider(context.Context, *CreateProviderRequest) (*CreateProviderResponse, error)
 	UpdateProvider(context.Context, *UpdateProviderRequest) (*UpdateProviderResponse, error)
 	DeleteProvider(context.Context, *DeleteProviderRequest) (*DeleteProviderResponse, error)
+	ExchangeAuthorizationCode(context.Context, *ExchangeAuthorizationCodeRequest) (*ExchangeAuthorizationCodeResponse, error)
 	mustEmbedUnimplementedOAuthProviderServiceServer()
 }
 
@@ -121,6 +132,9 @@ func (UnimplementedOAuthProviderServiceServer) UpdateProvider(context.Context, *
 }
 func (UnimplementedOAuthProviderServiceServer) DeleteProvider(context.Context, *DeleteProviderRequest) (*DeleteProviderResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteProvider not implemented")
+}
+func (UnimplementedOAuthProviderServiceServer) ExchangeAuthorizationCode(context.Context, *ExchangeAuthorizationCodeRequest) (*ExchangeAuthorizationCodeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExchangeAuthorizationCode not implemented")
 }
 func (UnimplementedOAuthProviderServiceServer) mustEmbedUnimplementedOAuthProviderServiceServer() {}
 
@@ -210,6 +224,24 @@ func _OAuthProviderService_DeleteProvider_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _OAuthProviderService_ExchangeAuthorizationCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExchangeAuthorizationCodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OAuthProviderServiceServer).ExchangeAuthorizationCode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/oauthcredentials.v1.OAuthProviderService/ExchangeAuthorizationCode",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OAuthProviderServiceServer).ExchangeAuthorizationCode(ctx, req.(*ExchangeAuthorizationCodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // OAuthProviderService_ServiceDesc is the grpc.ServiceDesc for OAuthProviderService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -228,6 +260,10 @@ var OAuthProviderService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteProvider",
 			Handler:    _OAuthProviderService_DeleteProvider_Handler,
+		},
+		{
+			MethodName: "ExchangeAuthorizationCode",
+			Handler:    _OAuthProviderService_ExchangeAuthorizationCode_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

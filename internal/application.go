@@ -93,6 +93,7 @@ func NewApplication(cfgPath string) (*Application, error) {
 		providerRepository,
 		oauthAppRepository,
 		encryptor,
+		oauth2.NewClient(),
 	)
 
 	server := grpcimpl.NewServer(

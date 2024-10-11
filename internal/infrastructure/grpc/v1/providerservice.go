@@ -14,6 +14,7 @@ type ProviderService interface {
 	CreateProvider(ctx context.Context, input *provider.CreateInput, ownerID string) (*provider.CreateProviderResponse, error)
 	UpdateProvider(ctx context.Context, name string, input *provider.UpdateInput) (*provider.UpdateProviderResponse, error)
 	DeleteProvider(ctx context.Context, id string) error
+	ExchangeAuthorizationCode(ctx context.Context, input *provider.ExchangeAuthorizationCodeInput) error
 }
 
 type ListProviderStream interface {
@@ -108,4 +109,15 @@ func (s ProviderServiceGRPC) DeleteProvider(ctx context.Context, oauthProvider *
 	}
 
 	return &oauthcredentials.DeleteProviderResponse{}, nil
+}
+
+func (s ProviderServiceGRPC) ExchangeAuthorizationCode(ctx context.Context, input *oauthcredentials.ExchangeAuthorizationCodeRequest) (*oauthcredentials.ExchangeAuthorizationCodeResponse, error) {
+	if err := s.providerService.ExchangeAuthorizationCode(ctx, &provider.ExchangeAuthorizationCodeInput{
+		Provider: input.GetProvider(),
+		Code:     input.GetCode(),
+	}); err != nil {
+		return nil, fmt.Errorf("failed to exchange authorization code: %w", err)
+	}
+
+	return &oauthcredentials.ExchangeAuthorizationCodeResponse{}, nil
 }

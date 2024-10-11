@@ -1,4 +1,4 @@
-package domain
+package oauth2
 
 import (
 	"context"
