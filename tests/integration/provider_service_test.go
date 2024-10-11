@@ -41,7 +41,7 @@ func TestCreateProvider(t *testing.T) {
 
 func TestListProviders(t *testing.T) {
 	// Set up the gRPC connection
-	conn, err := grpc.Dial(fmt.Sprintf("localhost:%s", ServerPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(fmt.Sprintf("localhost:%s", ServerPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		t.Fatalf("Failed to connect to gRPC server: %v", err)
 	}
@@ -73,7 +73,9 @@ func TestListProviders(t *testing.T) {
 
 func TestUpdateProvider(t *testing.T) {
 	// Set up the gRPC connection
-	conn, err := grpc.Dial(fmt.Sprintf("localhost:%s", ServerPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(fmt.Sprintf("localhost:%s", ServerPort), grpc.WithTransportCredentials(
+		insecure.NewCredentials(),
+	))
 	if err != nil {
 		t.Fatalf("Failed to connect to gRPC server: %v", err)
 	}
@@ -100,7 +102,7 @@ func TestUpdateProvider(t *testing.T) {
 
 func TestDeleteProvider(t *testing.T) {
 	// Set up the gRPC connection
-	conn, err := grpc.Dial(fmt.Sprintf("localhost:%s", ServerPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(fmt.Sprintf("localhost:%s", ServerPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		t.Fatalf("Failed to connect to gRPC server: %v", err)
 	}
