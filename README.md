@@ -1,5 +1,9 @@
 # oauth-credentials-server
-
+[![codecov](https://codecov.io/gh/microserv-io/oauth-credentials-server/graph/badge.svg?token=5TTII2E9NM)](https://codecov.io/gh/microserv-io/oauth-credentials-server)
+[![golangci-lint](https://github.com/microserv-io/oauth-credentials-server/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/microserv-io/oauth-credentials-server/actions/workflows/golangci-lint.yml)
+[![Run Tests](https://github.com/microserv-io/oauth-credentials-server/actions/workflows/tests.yml/badge.svg)](https://github.com/microserv-io/oauth-credentials-server/actions/workflows/tests.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/microserv-io/oauth-credentials-server)](https://goreportcard.com/report/github.com/microserv-io/oauth-credentials-server)
+[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/microserv-io/oauth-credentials-server)]( )
 > [!WARNING]
 > 
 > This repository is a work in progress and is not yet ready for use. APIs are subject to change and will not be backwards compatible until release.
@@ -68,7 +72,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/microserv-io/oauth-credentials-server/pkg/oauth2/tokensource"
 	"golang.org/x/oauth2"
 	"net/url"
