@@ -19,8 +19,6 @@ import (
 	"os"
 )
 
-const defaultPortNumber = "8080"
-
 type Application struct {
 	server *grpc.Server
 	config *config.Config
