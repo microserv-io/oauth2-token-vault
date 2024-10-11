@@ -61,8 +61,13 @@ func (s ProviderServiceGRPC) ListProviders(_ *oauthcredentials.ListProvidersRequ
 
 func (s ProviderServiceGRPC) CreateProvider(ctx context.Context, oauthProvider *oauthcredentials.CreateProviderRequest) (*oauthcredentials.CreateProviderResponse, error) {
 	resp, err := s.providerService.CreateProvider(ctx, &provider.CreateInput{
-		Name:    oauthProvider.Name,
-		AuthURL: oauthProvider.AuthUrl,
+		Name:         oauthProvider.Name,
+		AuthURL:      oauthProvider.AuthUrl,
+		TokenURL:     oauthProvider.TokenUrl,
+		Scopes:       oauthProvider.Scopes,
+		ClientID:     oauthProvider.ClientId,
+		ClientSecret: oauthProvider.ClientSecret,
+		RedirectURI:  oauthProvider.RedirectUri,
 	}, "api")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create provider: %w", err)
