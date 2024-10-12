@@ -326,7 +326,7 @@ func TestService_DeleteProvider(t *testing.T) {
 			mockSetup: func(mockProviderRepo *MockProviderRepository, mockOAuthAppRepo *MockOAuthAppRepository) {
 				mockOAuthAppRepo.EXPECT().ListForProvider(mock.Anything, "provider1").Return([]*oauthapp.OAuthApp{
 					{
-						ID:        "app1",
+						ID:        1,
 						Provider:  "provider1",
 						Scopes:    []string{"scope1", "scope2"},
 						CreatedAt: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),

@@ -31,7 +31,7 @@ func TestTokenSourceFactory_NewTokenSource(t *testing.T) {
 				RedirectURL:  "https://redirect.url",
 			},
 			oauthApp: oauthapp.OAuthApp{
-				ID:           "1",
+				ID:           1,
 				Provider:     "provider1",
 				AccessToken:  "access_token",
 				RefreshToken: "refresh_token",
@@ -57,7 +57,7 @@ func TestTokenSourceFactory_NewTokenSource(t *testing.T) {
 				RedirectURL:  "https://redirect.url",
 			},
 			oauthApp: oauthapp.OAuthApp{
-				ID:           "1",
+				ID:           1,
 				Provider:     "provider1",
 				AccessToken:  "access_token",
 				RefreshToken: "refresh_token",

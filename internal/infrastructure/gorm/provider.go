@@ -10,7 +10,8 @@ import (
 
 type Provider struct {
 	gorm.Model
-	Name         string
+	ID           uint   `gorm:"primaryKey;autoIncrement"`
+	Name         string `gorm:"unique"`
 	ClientID     string
 	ClientSecret string
 	RedirectURL  string
@@ -24,6 +25,7 @@ type Provider struct {
 
 func (dao Provider) ToDomain() *provider.Provider {
 	return &provider.Provider{
+		ID:           dao.ID,
 		Name:         dao.Name,
 		ClientID:     dao.ClientID,
 		ClientSecret: dao.ClientSecret,
@@ -38,6 +40,7 @@ func (dao Provider) ToDomain() *provider.Provider {
 
 func newProviderFromDomain(provider *provider.Provider) *Provider {
 	return &Provider{
+		ID:           provider.ID,
 		Name:         provider.Name,
 		ClientID:     provider.ClientID,
 		ClientSecret: provider.ClientSecret,

@@ -10,7 +10,7 @@ import (
 
 type OAuthApp struct {
 	gorm.Model
-	ID           string `gorm:"primaryKey"`
+	ID           uint   `gorm:"primaryKey;autoIncrement"`
 	Provider     string `gorm:"index"`
 	AccessToken  string
 	RefreshToken string
@@ -63,10 +63,10 @@ func NewOAuthAppRepository(db *gorm.DB) *OAuthAppRepository {
 	}
 }
 
-func (r OAuthAppRepository) Find(ctx context.Context, ownerID string, id string) (*oauthapp.OAuthApp, error) {
+func (r OAuthAppRepository) Find(ctx context.Context, ownerID string, provider string) (*oauthapp.OAuthApp, error) {
 
 	var app OAuthApp
-	if err := r.db.WithContext(ctx).Where("id = ? AND owner_id = ?", id, ownerID).Take(&app).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("provider = ? AND owner_id = ?", provider, ownerID).Take(&app).Error; err != nil {
 		return nil, err
 	}
 
@@ -113,7 +113,7 @@ func (r OAuthAppRepository) Create(ctx context.Context, app *oauthapp.OAuthApp) 
 	return nil
 }
 
-func (r OAuthAppRepository) UpdateByID(ctx context.Context, id string, updateFn func(app *oauthapp.OAuthApp) error) error {
+func (r OAuthAppRepository) UpdateByID(ctx context.Context, id uint, updateFn func(app *oauthapp.OAuthApp) error) error {
 	var app OAuthApp
 	if err := r.db.WithContext(ctx).Find(&app, "id = ?", id).Error; err != nil {
 		return err
