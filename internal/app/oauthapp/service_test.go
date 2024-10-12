@@ -29,7 +29,7 @@ func TestOAuthAppService_ListOAuthAppsForOwner(t *testing.T) {
 			mockSetup: func(oauthAppRepository *MockOAuthAppRepository) {
 				oauthAppRepository.EXPECT().ListForOwner(mock.Anything, "owner1").Return([]*oauthapp.OAuthApp{
 					{
-						ID: "app1",
+						ID: 1,
 					},
 				}, nil)
 			},
@@ -37,7 +37,7 @@ func TestOAuthAppService_ListOAuthAppsForOwner(t *testing.T) {
 			expectedResp: &ListOAuthAppsForOwnerResponse{
 				Apps: []*OAuthApp{
 					{
-						ID: "app1",
+						ID: "1",
 					},
 				},
 			},
@@ -89,13 +89,13 @@ func TestOAuthAppService_GetOAuthForProviderAndOwner(t *testing.T) {
 			ownerID:    "owner1",
 			mockSetup: func(oauthAppRepository *MockOAuthAppRepository) {
 				oauthAppRepository.EXPECT().Find(mock.Anything, "owner1", "provider1").Return(&oauthapp.OAuthApp{
-					ID: "app1",
+					ID: 1,
 				}, nil)
 			},
 			expectedError: false,
 			expectedResp: &GetOAuthForProviderAndOwnerResponse{
 				App: &OAuthApp{
-					ID: "app1",
+					ID: "1",
 				},
 			},
 		},
@@ -216,7 +216,7 @@ func TestService_RetrieveAccessToken(t *testing.T) {
 			mockSetup: func(oauthAppRepository *MockOAuthAppRepository, providerRepository *MockProviderRepository, tokenSourceFactory *MockTokenSourceFactory) {
 
 				mockOAuthApp := &oauthapp.OAuthApp{
-					ID:           "app1",
+					ID:           1,
 					Provider:     "provider1",
 					AccessToken:  "oldAccessToken",
 					RefreshToken: "oldRefreshToken",
@@ -240,7 +240,7 @@ func TestService_RetrieveAccessToken(t *testing.T) {
 					},
 					err: nil,
 				})
-				oauthAppRepository.EXPECT().UpdateByID(mock.Anything, "app1", mock.Anything).Return(nil)
+				oauthAppRepository.EXPECT().UpdateByID(mock.Anything, uint(1), mock.Anything).Return(nil)
 			},
 			expectedError: false,
 			expectedResp: &RetrieveAccessTokenResponse{
@@ -263,7 +263,7 @@ func TestService_RetrieveAccessToken(t *testing.T) {
 			ownerID:    "owner3",
 			mockSetup: func(oauthAppRepository *MockOAuthAppRepository, providerRepository *MockProviderRepository, tokenSourceFactory *MockTokenSourceFactory) {
 				oauthAppRepository.EXPECT().Find(mock.Anything, "owner3", "provider3").Return(&oauthapp.OAuthApp{
-					ID:          "app3",
+					ID:          3,
 					Provider:    "provider3",
 					AccessToken: "oldAccessToken",
 					ExpiresAt:   time.Now().Add(-time.Hour),
@@ -280,7 +280,7 @@ func TestService_RetrieveAccessToken(t *testing.T) {
 			mockSetup: func(oauthAppRepository *MockOAuthAppRepository, providerRepository *MockProviderRepository, tokenSourceFactory *MockTokenSourceFactory) {
 
 				mockOAuthApp := &oauthapp.OAuthApp{
-					ID:           "app4",
+					ID:           4,
 					Provider:     "provider4",
 					AccessToken:  "oldAccessToken",
 					RefreshToken: "oldRefreshToken",

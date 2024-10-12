@@ -295,7 +295,7 @@ func (_c *MockOAuthAppRepository_ListForProvider_Call) RunAndReturn(run func(con
 }
 
 // UpdateByID provides a mock function with given fields: ctx, id, updateFn
-func (_m *MockOAuthAppRepository) UpdateByID(ctx context.Context, id string, updateFn func(*oauthapp.OAuthApp) error) error {
+func (_m *MockOAuthAppRepository) UpdateByID(ctx context.Context, id uint, updateFn func(*oauthapp.OAuthApp) error) error {
 	ret := _m.Called(ctx, id, updateFn)
 
 	if len(ret) == 0 {
@@ -303,7 +303,7 @@ func (_m *MockOAuthAppRepository) UpdateByID(ctx context.Context, id string, upd
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, func(*oauthapp.OAuthApp) error) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uint, func(*oauthapp.OAuthApp) error) error); ok {
 		r0 = rf(ctx, id, updateFn)
 	} else {
 		r0 = ret.Error(0)
@@ -319,15 +319,15 @@ type MockOAuthAppRepository_UpdateByID_Call struct {
 
 // UpdateByID is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id string
+//   - id uint
 //   - updateFn func(*oauthapp.OAuthApp) error
 func (_e *MockOAuthAppRepository_Expecter) UpdateByID(ctx interface{}, id interface{}, updateFn interface{}) *MockOAuthAppRepository_UpdateByID_Call {
 	return &MockOAuthAppRepository_UpdateByID_Call{Call: _e.mock.On("UpdateByID", ctx, id, updateFn)}
 }
 
-func (_c *MockOAuthAppRepository_UpdateByID_Call) Run(run func(ctx context.Context, id string, updateFn func(*oauthapp.OAuthApp) error)) *MockOAuthAppRepository_UpdateByID_Call {
+func (_c *MockOAuthAppRepository_UpdateByID_Call) Run(run func(ctx context.Context, id uint, updateFn func(*oauthapp.OAuthApp) error)) *MockOAuthAppRepository_UpdateByID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(func(*oauthapp.OAuthApp) error))
+		run(args[0].(context.Context), args[1].(uint), args[2].(func(*oauthapp.OAuthApp) error))
 	})
 	return _c
 }
@@ -337,7 +337,7 @@ func (_c *MockOAuthAppRepository_UpdateByID_Call) Return(_a0 error) *MockOAuthAp
 	return _c
 }
 
-func (_c *MockOAuthAppRepository_UpdateByID_Call) RunAndReturn(run func(context.Context, string, func(*oauthapp.OAuthApp) error) error) *MockOAuthAppRepository_UpdateByID_Call {
+func (_c *MockOAuthAppRepository_UpdateByID_Call) RunAndReturn(run func(context.Context, uint, func(*oauthapp.OAuthApp) error) error) *MockOAuthAppRepository_UpdateByID_Call {
 	_c.Call.Return(run)
 	return _c
 }

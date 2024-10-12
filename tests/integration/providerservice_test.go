@@ -142,6 +142,15 @@ func TestExchangeAuthorizationCode(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
+
+		if r.FormValue("code") != "test-code" {
+			w.WriteHeader(http.StatusBadRequest)
+			if _, err := w.Write([]byte(`{"error": "invalid_request"}`)); err != nil {
+				t.Fatalf("failed to write response: %v", err)
+			}
+			return
+		}
+
 		w.WriteHeader(http.StatusOK)
 		if _, err := w.Write([]byte(`{
 					"access_token": "new_access_token",

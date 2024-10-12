@@ -9,6 +9,7 @@ import (
 	"golang.org/x/oauth2"
 	"log/slog"
 	"net/url"
+	"strconv"
 )
 
 type OAuthAppRepository interface {
@@ -58,7 +59,7 @@ func (s *Service) ListOAuthAppsForOwner(ctx context.Context, ownerID string) (*L
 
 	for _, app := range oauthApps {
 		response.Apps = append(response.Apps, &OAuthApp{
-			ID:         app.ID,
+			ID:         strconv.Itoa(int(app.ID)),
 			OwnerID:    app.OwnerID,
 			ProviderID: app.Provider,
 			Scopes:     app.Scopes,
@@ -76,7 +77,7 @@ func (s *Service) GetOAuthForProviderAndOwner(ctx context.Context, providerID st
 
 	return &GetOAuthForProviderAndOwnerResponse{
 		App: &OAuthApp{
-			ID:         oauthApp.ID,
+			ID:         strconv.Itoa(int(oauthApp.ID)),
 			OwnerID:    oauthApp.OwnerID,
 			ProviderID: oauthApp.Provider,
 			Scopes:     oauthApp.Scopes,

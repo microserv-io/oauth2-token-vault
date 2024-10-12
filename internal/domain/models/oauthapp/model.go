@@ -3,7 +3,7 @@ package oauthapp
 import "time"
 
 type OAuthApp struct {
-	ID           string
+	ID           uint
 	Provider     string
 	AccessToken  string
 	RefreshToken string

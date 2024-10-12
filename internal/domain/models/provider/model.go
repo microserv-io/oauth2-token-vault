@@ -17,6 +17,7 @@ const (
 )
 
 type Provider struct {
+	ID           uint
 	Name         string
 	ClientID     string
 	ClientSecret string
