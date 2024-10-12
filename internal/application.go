@@ -8,11 +8,12 @@ import (
 	"github.com/microserv-io/oauth-credentials-server/internal/config"
 	domainprovider "github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
 	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/encryption"
-	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/gorm"
+	gormimpl "github.com/microserv-io/oauth-credentials-server/internal/infrastructure/gorm"
 	grpcimpl "github.com/microserv-io/oauth-credentials-server/internal/infrastructure/grpc"
 	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/oauth2"
 	"github.com/microserv-io/oauth-credentials-server/internal/usecase"
 	"google.golang.org/grpc"
+	"gorm.io/gorm"
 	"log"
 	"log/slog"
 	"net"
@@ -21,38 +22,58 @@ import (
 
 type Application struct {
 	server *grpc.Server
+	lis    net.Listener
 	config *config.Config
+	db     *gorm.DB
 }
 
-func NewApplication(cfgPath string) (*Application, error) {
+type Option func(*Application) error
 
+func WithDatabase(db *gorm.DB) Option {
+	return func(a *Application) error {
+		a.db = db
+		return nil
+	}
+}
+
+func NewApplication(cfgPath string, opts ...Option) (*Application, error) {
+	app := &Application{}
+	for _, option := range opts {
+		if err := option(app); err != nil {
+			return nil, fmt.Errorf("failed to apply option: %v", err)
+		}
+	}
 	configObj, err := config.NewConfig(cfgPath, "config")
 	if err != nil {
 		return nil, fmt.Errorf("failed to load configuration: %v", err)
 	}
+	app.config = configObj
 
 	log.Printf("Configuration loaded from file.")
 
-	db, err := gorm.Open(
-		fmt.Sprintf(
-			"host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
-			configObj.Database.Host,
-			configObj.Database.User,
-			configObj.Database.Password,
-			configObj.Database.Name,
-			configObj.Database.Port,
-		),
-		true,
-		6,
-		5,
-		nil,
-	)
-	if err != nil {
-		panic(err)
+	if app.db == nil {
+		db, err := gormimpl.Open(
+			fmt.Sprintf(
+				"host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
+				configObj.Database.Host,
+				configObj.Database.User,
+				configObj.Database.Password,
+				configObj.Database.Name,
+				configObj.Database.Port,
+			),
+			true,
+			6,
+			5,
+			nil,
+		)
+		if err != nil {
+			panic(err)
+		}
+		app.db = db
 	}
 
-	oauthAppRepository := gorm.NewOAuthAppRepository(db)
-	providerRepository := gorm.NewProviderRepository(db)
+	oauthAppRepository := gormimpl.NewOAuthAppRepository(app.db)
+	providerRepository := gormimpl.NewProviderRepository(app.db)
 
 	var providers []*domainprovider.Provider
 	for _, p := range configObj.Providers {
@@ -96,35 +117,31 @@ func NewApplication(cfgPath string) (*Application, error) {
 		oauth2.NewClient(),
 	)
 
-	server := grpcimpl.NewServer(
+	app.server = grpcimpl.NewServer(
 		oauthAppService,
 		providerService,
 		logger,
 	)
 
-	return &Application{
-		server: server,
-		config: configObj,
-	}, nil
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", configObj.Port))
+	if err != nil {
+		return nil, fmt.Errorf("failed to listen: %v", err)
+	}
+
+	app.lis = lis
+
+	return app, nil
 }
 
-func (a *Application) Run(portNumber string) error {
+func (a *Application) GetPort() int {
+	return a.lis.Addr().(*net.TCPAddr).Port
+}
 
-	if portNumber == "" {
-		portNumber = "8080"
-	}
-
-	log.Printf("Starting server on port %s", portNumber)
-
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", portNumber))
-	if err != nil {
-		return fmt.Errorf("failed to listen: %v", err)
-	}
-
-	if err := a.server.Serve(lis); err != nil {
+// Run starts the gRPC server on the specified port, or 8080 if not specified.
+func (a *Application) Run() error {
+	if err := a.server.Serve(a.lis); err != nil {
 		return fmt.Errorf("failed to serve: %v", err)
 	}
-
 	return nil
 }
 

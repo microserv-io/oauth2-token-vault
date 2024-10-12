@@ -13,7 +13,7 @@ func main() {
 		log.Panicf("failed to create application: %v", err)
 	}
 
-	if err := application.Run(""); err != nil {
+	if err := application.Run(); err != nil {
 		log.Panicf("failed to run application: %v", err)
 	}
 }

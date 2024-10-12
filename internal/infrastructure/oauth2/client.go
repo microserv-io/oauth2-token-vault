@@ -15,6 +15,7 @@ func NewClient() *Client {
 }
 
 func (c *Client) Exchange(ctx context.Context, config *oauth2.Config, code string) (*oauth2.Token, error) {
+	print(fmt.Sprintf("Exchanging code for token with config: %v", config))
 	client := oauth.Config{
 		ClientID:     config.ClientID,
 		ClientSecret: config.ClientSecret,
