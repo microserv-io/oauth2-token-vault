@@ -58,7 +58,7 @@ func Open(
 			break
 		}
 
-		time.Sleep(retryInterval)
+		time.Sleep(retryInterval * time.Second)
 	}
 	if db == nil {
 		return nil, fmt.Errorf("could not connect to the database after %d attempts", maxAttempts)

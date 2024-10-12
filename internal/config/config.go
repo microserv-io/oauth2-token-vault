@@ -26,6 +26,7 @@ type Database struct {
 }
 
 type Config struct {
+	Port                      string     `mapstructure:"port"`
 	Database                  Database   `mapstructure:"database"`
 	Providers                 []Provider `mapstructure:"providers"`
 	AllowProviderRegistration bool       `mapstructure:"allow_provider_registration"`
@@ -43,6 +44,10 @@ func NewConfig(cfgPath string, configFileName string) (*Config, error) {
 	v.AddConfigPath(".")
 
 	v.AutomaticEnv()
+
+	if err := v.BindEnv("port", "PORT"); err != nil {
+		return nil, fmt.Errorf("error binding env variable: %w", err)
+	}
 
 	if err := v.BindEnv("database.host", "DATABASE_HOST"); err != nil {
 		return nil, fmt.Errorf("error binding env variable: %w", err)
