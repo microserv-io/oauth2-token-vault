@@ -1,10 +1,10 @@
 package grpc
 
 import (
-	"github.com/microserv-io/oauth-credentials-server/internal/app/oauthapp"
-	"github.com/microserv-io/oauth-credentials-server/internal/app/provider"
-	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/grpc/v1"
-	"github.com/microserv-io/oauth-credentials-server/pkg/proto/oauthcredentials/v1"
+	"github.com/microserv-io/oauth2-token-vault/internal/app/oauthapp"
+	"github.com/microserv-io/oauth2-token-vault/internal/app/provider"
+	"github.com/microserv-io/oauth2-token-vault/internal/infrastructure/grpc/v1"
+	"github.com/microserv-io/oauth2-token-vault/pkg/proto/oauthcredentials/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"

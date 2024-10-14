@@ -2,13 +2,13 @@ package oauth2
 
 import (
 	"context"
-	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/oauthapp"
-	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
-	oauth3 "github.com/microserv-io/oauth-credentials-server/internal/domain/oauth2"
+	"github.com/microserv-io/oauth2-token-vault/internal/domain/models/oauthapp"
+	"github.com/microserv-io/oauth2-token-vault/internal/domain/models/provider"
+	oauth "github.com/microserv-io/oauth2-token-vault/internal/domain/oauth2"
 	"golang.org/x/oauth2"
 )
 
-var _ oauth3.TokenSourceFactory = &TokenSourceFactory{}
+var _ oauth.TokenSourceFactory = &TokenSourceFactory{}
 
 type TokenSourceFactory struct {
 }

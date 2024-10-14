@@ -5,7 +5,7 @@ package v1
 import (
 	context "context"
 
-	oauthapp "github.com/microserv-io/oauth-credentials-server/internal/app/oauthapp"
+	oauthapp "github.com/microserv-io/oauth2-token-vault/internal/app/oauthapp"
 	mock "github.com/stretchr/testify/mock"
 )
 

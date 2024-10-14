@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/oauthapp"
-	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
+	"github.com/microserv-io/oauth2-token-vault/internal/domain/models/oauthapp"
+	"github.com/microserv-io/oauth2-token-vault/internal/domain/models/provider"
 	"golang.org/x/oauth2"
 )
 

@@ -5,7 +5,7 @@ package oauthapp
 import (
 	context "context"
 
-	provider "github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
+	provider "github.com/microserv-io/oauth2-token-vault/internal/domain/models/provider"
 	mock "github.com/stretchr/testify/mock"
 )
 
