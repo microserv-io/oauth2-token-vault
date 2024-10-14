@@ -15,10 +15,6 @@ type OAuthAppService interface {
 	RetrieveAccessToken(ctx context.Context, providerID, ownerID string) (*oauthapp.RetrieveAccessTokenResponse, error)
 }
 
-type ListOAuthsStream interface {
-	oauthcredentials.OAuthService_ListOAuthsServer
-}
-
 type OAuthAppServiceGRPC struct {
 	oauthcredentials.UnimplementedOAuthServiceServer
 
@@ -36,43 +32,36 @@ func NewOAuthAppServiceGRPC(
 	return &service
 }
 
-func (s OAuthAppServiceGRPC) ListOAuths(request *oauthcredentials.ListOAuthsRequest, server oauthcredentials.OAuthService_ListOAuthsServer) error {
-	oauthApps, err := s.oauthAppService.ListOAuthAppsForOwner(server.Context(), request.GetOwner())
+func (s OAuthAppServiceGRPC) ListOAuths(ctx context.Context, request *oauthcredentials.ListOAuthsForOwnerRequest) (*oauthcredentials.ListOAuthsForOwnerResponse, error) {
+	oauthApps, err := s.oauthAppService.ListOAuthAppsForOwner(ctx, request.GetOwner())
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("could not list oauth apps: %w", err)
 	}
 
+	var oauthAppsResponse []*oauthcredentials.OAuthApp
 	for _, oauthApp := range oauthApps.Apps {
-
-		if err := server.Send(&oauthcredentials.ListOAuthsResponse{Oauths: []*oauthcredentials.OAuth{
-			{
-				Id:       oauthApp.ID,
-				Owner:    oauthApp.OwnerID,
-				Provider: oauthApp.ProviderID,
-				Scopes:   oauthApp.Scopes,
-			},
-		}}); err != nil {
-			return err
-		}
+		oauthAppsResponse = append(oauthAppsResponse, &oauthcredentials.OAuthApp{
+			Id:       oauthApp.ID,
+			Owner:    oauthApp.OwnerID,
+			Provider: oauthApp.ProviderID,
+			Scopes:   oauthApp.Scopes,
+		})
 	}
 
-	return nil
-}
-
-func (s OAuthAppServiceGRPC) GetOAuthByID(_ context.Context, _ *oauthcredentials.GetOAuthByIDRequest) (*oauthcredentials.GetOAuthByIDResponse, error) {
-	//TODO implement me
-	panic("implement me")
+	return &oauthcredentials.ListOAuthsForOwnerResponse{
+		OauthApps: oauthAppsResponse,
+	}, nil
 }
 
 func (s OAuthAppServiceGRPC) GetOAuthByProvider(ctx context.Context, request *oauthcredentials.GetOAuthByProviderRequest) (*oauthcredentials.GetOAuthByProviderResponse, error) {
 	resp, err := s.oauthAppService.GetOAuthForProviderAndOwner(ctx, request.GetProvider(), request.GetOwner())
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get oauth app: %w", err)
 	}
 
 	return &oauthcredentials.GetOAuthByProviderResponse{
-		Oauth: &oauthcredentials.OAuth{
+		OauthApp: &oauthcredentials.OAuthApp{
 			Id:       resp.App.ID,
 			Owner:    resp.App.OwnerID,
 			Provider: resp.App.ProviderID,

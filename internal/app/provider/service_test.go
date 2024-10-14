@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/oauthapp"
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/oauth2"
+	"net/url"
 	"testing"
 	"time"
 
@@ -362,6 +363,79 @@ func TestService_DeleteProvider(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 			}
+		})
+	}
+}
+
+func TestService_GetAuthorizationURL(t *testing.T) {
+	tests := []struct {
+		name          string
+		input         *GetAuthorizationURLInput
+		state         string
+		mockSetup     func(providerRepository *MockProviderRepository, oauthClient *MockOAuth2Client)
+		expectedError bool
+		expectedResp  *GetAuthorizationURLResponse
+	}{
+		{
+			name:  "Success",
+			input: &GetAuthorizationURLInput{Provider: "provider1", State: "state1"},
+			state: "state1",
+			mockSetup: func(providerRepository *MockProviderRepository, oauthClient *MockOAuth2Client) {
+				providerRepository.EXPECT().FindByName(mock.Anything, "provider1").Return(&provider.Provider{
+					ClientID:     "client1",
+					ClientSecret: "secret1",
+					AuthURL:      "http://auth",
+					RedirectURL:  "http://localhost",
+					Scopes:       []string{"scope1"},
+				}, nil)
+				oauthClient.EXPECT().GetAuthorizationURL(&oauth2.Config{
+					ClientID:     "client1",
+					ClientSecret: "secret1",
+					AuthURL:      "http://auth",
+					RedirectURL:  "http://localhost",
+					Scopes:       []string{"scope1"},
+				}, "state1").Return("http://auth?client_id=client1&redirect_uri=http%3A%2F%2Flocalhost&response_type=code&scope=scope1&state=state1", nil)
+			},
+			expectedError: false,
+			expectedResp: &GetAuthorizationURLResponse{
+				URL: &url.URL{
+					Scheme:   "http",
+					Host:     "auth",
+					RawQuery: "client_id=client1&redirect_uri=http%3A%2F%2Flocalhost&response_type=code&scope=scope1&state=state1",
+				},
+			},
+		},
+		{
+			name:  "Failure",
+			input: &GetAuthorizationURLInput{Provider: "provider2", State: "state2"},
+			state: "state2",
+			mockSetup: func(providerRepository *MockProviderRepository, oauthClient *MockOAuth2Client) {
+				providerRepository.EXPECT().FindByName(mock.Anything, "provider2").Return(nil, errors.New("database error"))
+			},
+			expectedError: true,
+			expectedResp:  nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			providerRepository := NewMockProviderRepository(t)
+			oauthAppRepository := NewMockOAuthAppRepository(t)
+			mockEncryptor := NewMockEncryptor(t)
+			mockOAuth2Client := NewMockOAuth2Client(t)
+
+			tt.mockSetup(providerRepository, mockOAuth2Client)
+
+			service := NewService(providerRepository, oauthAppRepository, mockEncryptor, mockOAuth2Client)
+
+			resp, err := service.GetAuthorizationURL(context.Background(), tt.input)
+			if tt.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, tt.expectedResp, resp)
 		})
 	}
 }

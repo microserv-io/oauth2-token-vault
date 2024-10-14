@@ -1,6 +1,9 @@
 package provider
 
-import "time"
+import (
+	"net/url"
+	"time"
+)
 
 type Provider struct {
 	ID          string
@@ -47,6 +50,15 @@ type ListProvidersResponse struct {
 
 type GetProviderByNameResponse struct {
 	Provider *Provider
+}
+
+type GetAuthorizationURLInput struct {
+	Provider string
+	State    string
+}
+
+type GetAuthorizationURLResponse struct {
+	URL *url.URL
 }
 
 type ExchangeAuthorizationCodeInput struct {

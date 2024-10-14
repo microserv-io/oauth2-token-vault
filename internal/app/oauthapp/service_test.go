@@ -9,7 +9,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"golang.org/x/oauth2"
 	"log/slog"
-	"net/url"
 	"os"
 	"testing"
 	"time"
@@ -122,74 +121,6 @@ func TestOAuthAppService_GetOAuthForProviderAndOwner(t *testing.T) {
 			service := NewService(oauthAppRepository, nil, nil, logger)
 
 			resp, err := service.GetOAuthForProviderAndOwner(context.Background(), tt.providerID, tt.ownerID)
-			if tt.expectedError {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-			assert.Equal(t, tt.expectedResp, resp)
-		})
-	}
-}
-
-func TestOAuthAppService_CreateAuthorizationURLForProvider(t *testing.T) {
-	tests := []struct {
-		name          string
-		providerID    string
-		scopes        []string
-		state         string
-		mockSetup     func(providerRepository *MockProviderRepository)
-		expectedError bool
-		expectedResp  *CreateAuthorizationURLForProviderResponse
-	}{
-		{
-			name:       "Success",
-			providerID: "provider1",
-			scopes:     []string{"scope1"},
-			state:      "state1",
-			mockSetup: func(providerRepository *MockProviderRepository) {
-				providerRepository.EXPECT().FindByName(mock.Anything, "provider1").Return(&provider.Provider{
-					ClientID:     "client1",
-					ClientSecret: "secret1",
-					AuthURL:      "http://auth",
-					RedirectURL:  "http://localhost",
-				}, nil)
-
-			},
-			expectedError: false,
-			expectedResp: &CreateAuthorizationURLForProviderResponse{
-				URL: &url.URL{
-					Scheme:   "http",
-					Host:     "auth",
-					RawQuery: "client_id=client1&redirect_uri=http%3A%2F%2Flocalhost&response_type=code&scope=scope1&state=state1",
-				},
-			},
-		},
-		{
-			name:       "Failure",
-			providerID: "provider2",
-			scopes:     []string{"scope2"},
-			state:      "state2",
-			mockSetup: func(providerRepository *MockProviderRepository) {
-				providerRepository.EXPECT().FindByName(mock.Anything, "provider2").Return(nil, errors.New("database error"))
-			},
-			expectedError: true,
-			expectedResp:  nil,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			providerRepository := NewMockProviderRepository(t)
-
-			tt.mockSetup(providerRepository)
-
-			logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
-
-			service := NewService(nil, providerRepository, nil, logger)
-
-			resp, err := service.CreateAuthorizationURLForProvider(context.Background(), tt.providerID, tt.scopes, tt.state)
 			if tt.expectedError {
 				assert.Error(t, err)
 			} else {

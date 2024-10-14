@@ -22,5 +22,6 @@ type Token struct {
 }
 
 type Client interface {
+	GetAuthorizationURL(config *Config, state string) (string, error)
 	Exchange(ctx context.Context, config *Config, code string) (*Token, error)
 }

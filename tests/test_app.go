@@ -33,8 +33,6 @@ func NewTestApp(configPath string) *TestApp {
 		log.Panicf("failed to setup database: %v", err)
 	}
 
-	log.Print(databaseResource.GetHostPort("5432/tcp"))
-
 	db, err := gorm.Open(
 		"host=localhost user=user_name password=secret dbname=dbname port="+strings.Split(databaseResource.GetHostPort("5432/tcp"), ":")[1]+" sslmode=disable",
 		true,

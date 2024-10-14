@@ -14,7 +14,6 @@ import (
 	"github.com/microserv-io/oauth-credentials-server/internal/usecase"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
-	"log"
 	"log/slog"
 	"net"
 	"os"
@@ -48,8 +47,6 @@ func NewApplication(cfgPath string, opts ...Option) (*Application, error) {
 		return nil, fmt.Errorf("failed to load configuration: %v", err)
 	}
 	app.config = configObj
-
-	log.Printf("Configuration loaded from file.")
 
 	if app.db == nil {
 		db, err := gormimpl.Open(

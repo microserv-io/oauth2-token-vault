@@ -2,6 +2,7 @@ package gorm
 
 import (
 	"context"
+	"fmt"
 	"github.com/lib/pq"
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
 	"gorm.io/gorm"
@@ -98,8 +99,14 @@ func (p ProviderRepository) Create(ctx context.Context, provider *provider.Provi
 }
 
 func (p ProviderRepository) Delete(ctx context.Context, name string) error {
-	if err := p.db.WithContext(ctx).Where("name = ?", name).Delete(&Provider{}).Error; err != nil {
-		return err
+	q := p.db.WithContext(ctx).Where("name = ?", name).Delete(&Provider{})
+
+	if q.Error != nil {
+		return fmt.Errorf("failed to delete provider: %w", q.Error)
+	}
+
+	if q.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
 	}
 
 	return nil

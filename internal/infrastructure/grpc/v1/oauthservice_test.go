@@ -11,14 +11,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestService_ListOAuths(t *testing.T) {
+func TestService_ListOAuthsForOwner(t *testing.T) {
 
 	tests := []struct {
 		name          string
 		mockSetup     func(oauthAppService *MockOAuthAppService)
-		request       *oauthcredentials.ListOAuthsRequest
+		request       *oauthcredentials.ListOAuthsForOwnerRequest
 		expectedError error
-		expectedResp  *oauthcredentials.ListOAuthsResponse
+		expectedResp  *oauthcredentials.ListOAuthsForOwnerResponse
 	}{
 		{
 			name: "success",
@@ -31,9 +31,9 @@ func TestService_ListOAuths(t *testing.T) {
 						},
 					}, nil)
 			},
-			request: &oauthcredentials.ListOAuthsRequest{Owner: "owner1"},
-			expectedResp: &oauthcredentials.ListOAuthsResponse{
-				Oauths: []*oauthcredentials.OAuth{
+			request: &oauthcredentials.ListOAuthsForOwnerRequest{Owner: "owner1"},
+			expectedResp: &oauthcredentials.ListOAuthsForOwnerResponse{
+				OauthApps: []*oauthcredentials.OAuthApp{
 					{Id: "1", Owner: "owner1", Provider: "provider1", Scopes: []string{"scope1"}},
 				},
 			},
@@ -46,9 +46,9 @@ func TestService_ListOAuths(t *testing.T) {
 					ListOAuthAppsForOwner(mock.Anything, "owner1").
 					Return(nil, errors.New("some error"))
 			},
-			request:       &oauthcredentials.ListOAuthsRequest{Owner: "owner1"},
+			request:       &oauthcredentials.ListOAuthsForOwnerRequest{Owner: "owner1"},
 			expectedResp:  nil,
-			expectedError: errors.New("some error"),
+			expectedError: errors.New("could not list oauth apps: some error"),
 		},
 	}
 
@@ -60,20 +60,14 @@ func TestService_ListOAuths(t *testing.T) {
 
 			service := NewOAuthAppServiceGRPC(mockOAuthAppService)
 
-			stream := NewMockListOAuthsStream(t)
-
-			stream.EXPECT().Context().Return(context.Background())
-
-			if tt.expectedResp != nil {
-				stream.EXPECT().Send(tt.expectedResp).Return(nil)
-			}
-
-			err := service.ListOAuths(tt.request, stream)
+			resp, err := service.ListOAuths(context.Background(), tt.request)
 			if tt.expectedError != nil {
 				assert.EqualError(t, err, tt.expectedError.Error())
 			} else {
 				assert.NoError(t, err)
 			}
+
+			assert.Equal(t, tt.expectedResp, resp)
 		})
 	}
 }
@@ -97,7 +91,7 @@ func TestService_GetOAuthByProvider(t *testing.T) {
 			},
 			request: &oauthcredentials.GetOAuthByProviderRequest{Provider: "provider1", Owner: "owner1"},
 			expectedResp: &oauthcredentials.GetOAuthByProviderResponse{
-				Oauth: &oauthcredentials.OAuth{
+				OauthApp: &oauthcredentials.OAuthApp{
 					Id:       "1",
 					Owner:    "owner1",
 					Provider: "provider1",
@@ -115,7 +109,7 @@ func TestService_GetOAuthByProvider(t *testing.T) {
 			},
 			request:       &oauthcredentials.GetOAuthByProviderRequest{Provider: "provider1", Owner: "owner1"},
 			expectedResp:  nil,
-			expectedError: errors.New("some error"),
+			expectedError: errors.New("could not get oauth app: some error"),
 		},
 	}
 
