@@ -22,8 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type OAuthServiceClient interface {
-	ListOAuths(ctx context.Context, in *ListOAuthsRequest, opts ...grpc.CallOption) (OAuthService_ListOAuthsClient, error)
-	GetOAuthByID(ctx context.Context, in *GetOAuthByIDRequest, opts ...grpc.CallOption) (*GetOAuthByIDResponse, error)
+	ListOAuthsForOwner(ctx context.Context, in *ListOAuthsForOwnerRequest, opts ...grpc.CallOption) (*ListOAuthsForOwnerResponse, error)
 	GetOAuthByProvider(ctx context.Context, in *GetOAuthByProviderRequest, opts ...grpc.CallOption) (*GetOAuthByProviderResponse, error)
 	GetOAuthCredentialByProvider(ctx context.Context, in *GetOAuthCredentialByProviderRequest, opts ...grpc.CallOption) (*GetOAuthCredentialByProviderResponse, error)
 }
@@ -36,41 +35,9 @@ func NewOAuthServiceClient(cc grpc.ClientConnInterface) OAuthServiceClient {
 	return &oAuthServiceClient{cc}
 }
 
-func (c *oAuthServiceClient) ListOAuths(ctx context.Context, in *ListOAuthsRequest, opts ...grpc.CallOption) (OAuthService_ListOAuthsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &OAuthService_ServiceDesc.Streams[0], "/oauthcredentials.v1.OAuthService/ListOAuths", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &oAuthServiceListOAuthsClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type OAuthService_ListOAuthsClient interface {
-	Recv() (*ListOAuthsResponse, error)
-	grpc.ClientStream
-}
-
-type oAuthServiceListOAuthsClient struct {
-	grpc.ClientStream
-}
-
-func (x *oAuthServiceListOAuthsClient) Recv() (*ListOAuthsResponse, error) {
-	m := new(ListOAuthsResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *oAuthServiceClient) GetOAuthByID(ctx context.Context, in *GetOAuthByIDRequest, opts ...grpc.CallOption) (*GetOAuthByIDResponse, error) {
-	out := new(GetOAuthByIDResponse)
-	err := c.cc.Invoke(ctx, "/oauthcredentials.v1.OAuthService/GetOAuthByID", in, out, opts...)
+func (c *oAuthServiceClient) ListOAuthsForOwner(ctx context.Context, in *ListOAuthsForOwnerRequest, opts ...grpc.CallOption) (*ListOAuthsForOwnerResponse, error) {
+	out := new(ListOAuthsForOwnerResponse)
+	err := c.cc.Invoke(ctx, "/oauthcredentials.v1.OAuthService/ListOAuthsForOwner", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -99,8 +66,7 @@ func (c *oAuthServiceClient) GetOAuthCredentialByProvider(ctx context.Context, i
 // All implementations must embed UnimplementedOAuthServiceServer
 // for forward compatibility
 type OAuthServiceServer interface {
-	ListOAuths(*ListOAuthsRequest, OAuthService_ListOAuthsServer) error
-	GetOAuthByID(context.Context, *GetOAuthByIDRequest) (*GetOAuthByIDResponse, error)
+	ListOAuthsForOwner(context.Context, *ListOAuthsForOwnerRequest) (*ListOAuthsForOwnerResponse, error)
 	GetOAuthByProvider(context.Context, *GetOAuthByProviderRequest) (*GetOAuthByProviderResponse, error)
 	GetOAuthCredentialByProvider(context.Context, *GetOAuthCredentialByProviderRequest) (*GetOAuthCredentialByProviderResponse, error)
 	mustEmbedUnimplementedOAuthServiceServer()
@@ -110,11 +76,8 @@ type OAuthServiceServer interface {
 type UnimplementedOAuthServiceServer struct {
 }
 
-func (UnimplementedOAuthServiceServer) ListOAuths(*ListOAuthsRequest, OAuthService_ListOAuthsServer) error {
-	return status.Errorf(codes.Unimplemented, "method ListOAuths not implemented")
-}
-func (UnimplementedOAuthServiceServer) GetOAuthByID(context.Context, *GetOAuthByIDRequest) (*GetOAuthByIDResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetOAuthByID not implemented")
+func (UnimplementedOAuthServiceServer) ListOAuthsForOwner(context.Context, *ListOAuthsForOwnerRequest) (*ListOAuthsForOwnerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListOAuthsForOwner not implemented")
 }
 func (UnimplementedOAuthServiceServer) GetOAuthByProvider(context.Context, *GetOAuthByProviderRequest) (*GetOAuthByProviderResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetOAuthByProvider not implemented")
@@ -135,41 +98,20 @@ func RegisterOAuthServiceServer(s grpc.ServiceRegistrar, srv OAuthServiceServer)
 	s.RegisterService(&OAuthService_ServiceDesc, srv)
 }
 
-func _OAuthService_ListOAuths_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(ListOAuthsRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(OAuthServiceServer).ListOAuths(m, &oAuthServiceListOAuthsServer{stream})
-}
-
-type OAuthService_ListOAuthsServer interface {
-	Send(*ListOAuthsResponse) error
-	grpc.ServerStream
-}
-
-type oAuthServiceListOAuthsServer struct {
-	grpc.ServerStream
-}
-
-func (x *oAuthServiceListOAuthsServer) Send(m *ListOAuthsResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _OAuthService_GetOAuthByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetOAuthByIDRequest)
+func _OAuthService_ListOAuthsForOwner_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListOAuthsForOwnerRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OAuthServiceServer).GetOAuthByID(ctx, in)
+		return srv.(OAuthServiceServer).ListOAuthsForOwner(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/oauthcredentials.v1.OAuthService/GetOAuthByID",
+		FullMethod: "/oauthcredentials.v1.OAuthService/ListOAuthsForOwner",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OAuthServiceServer).GetOAuthByID(ctx, req.(*GetOAuthByIDRequest))
+		return srv.(OAuthServiceServer).ListOAuthsForOwner(ctx, req.(*ListOAuthsForOwnerRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -218,8 +160,8 @@ var OAuthService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*OAuthServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetOAuthByID",
-			Handler:    _OAuthService_GetOAuthByID_Handler,
+			MethodName: "ListOAuthsForOwner",
+			Handler:    _OAuthService_ListOAuthsForOwner_Handler,
 		},
 		{
 			MethodName: "GetOAuthByProvider",
@@ -230,12 +172,6 @@ var OAuthService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _OAuthService_GetOAuthCredentialByProvider_Handler,
 		},
 	},
-	Streams: []grpc.StreamDesc{
-		{
-			StreamName:    "ListOAuths",
-			Handler:       _OAuthService_ListOAuths_Handler,
-			ServerStreams: true,
-		},
-	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "oauthcredentials/v1/oauth.proto",
 }

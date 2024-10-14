@@ -22,10 +22,11 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type OAuthProviderServiceClient interface {
-	ListProviders(ctx context.Context, in *ListProvidersRequest, opts ...grpc.CallOption) (OAuthProviderService_ListProvidersClient, error)
+	ListProviders(ctx context.Context, in *ListProvidersRequest, opts ...grpc.CallOption) (*ListProvidersResponse, error)
 	CreateProvider(ctx context.Context, in *CreateProviderRequest, opts ...grpc.CallOption) (*CreateProviderResponse, error)
 	UpdateProvider(ctx context.Context, in *UpdateProviderRequest, opts ...grpc.CallOption) (*UpdateProviderResponse, error)
 	DeleteProvider(ctx context.Context, in *DeleteProviderRequest, opts ...grpc.CallOption) (*DeleteProviderResponse, error)
+	GetAuthorizationURL(ctx context.Context, in *GetAuthorizationURLRequest, opts ...grpc.CallOption) (*GetAuthorizationURLResponse, error)
 	ExchangeAuthorizationCode(ctx context.Context, in *ExchangeAuthorizationCodeRequest, opts ...grpc.CallOption) (*ExchangeAuthorizationCodeResponse, error)
 }
 
@@ -37,36 +38,13 @@ func NewOAuthProviderServiceClient(cc grpc.ClientConnInterface) OAuthProviderSer
 	return &oAuthProviderServiceClient{cc}
 }
 
-func (c *oAuthProviderServiceClient) ListProviders(ctx context.Context, in *ListProvidersRequest, opts ...grpc.CallOption) (OAuthProviderService_ListProvidersClient, error) {
-	stream, err := c.cc.NewStream(ctx, &OAuthProviderService_ServiceDesc.Streams[0], "/oauthcredentials.v1.OAuthProviderService/ListProviders", opts...)
+func (c *oAuthProviderServiceClient) ListProviders(ctx context.Context, in *ListProvidersRequest, opts ...grpc.CallOption) (*ListProvidersResponse, error) {
+	out := new(ListProvidersResponse)
+	err := c.cc.Invoke(ctx, "/oauthcredentials.v1.OAuthProviderService/ListProviders", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &oAuthProviderServiceListProvidersClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type OAuthProviderService_ListProvidersClient interface {
-	Recv() (*ListProvidersResponse, error)
-	grpc.ClientStream
-}
-
-type oAuthProviderServiceListProvidersClient struct {
-	grpc.ClientStream
-}
-
-func (x *oAuthProviderServiceListProvidersClient) Recv() (*ListProvidersResponse, error) {
-	m := new(ListProvidersResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
+	return out, nil
 }
 
 func (c *oAuthProviderServiceClient) CreateProvider(ctx context.Context, in *CreateProviderRequest, opts ...grpc.CallOption) (*CreateProviderResponse, error) {
@@ -96,6 +74,15 @@ func (c *oAuthProviderServiceClient) DeleteProvider(ctx context.Context, in *Del
 	return out, nil
 }
 
+func (c *oAuthProviderServiceClient) GetAuthorizationURL(ctx context.Context, in *GetAuthorizationURLRequest, opts ...grpc.CallOption) (*GetAuthorizationURLResponse, error) {
+	out := new(GetAuthorizationURLResponse)
+	err := c.cc.Invoke(ctx, "/oauthcredentials.v1.OAuthProviderService/GetAuthorizationURL", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *oAuthProviderServiceClient) ExchangeAuthorizationCode(ctx context.Context, in *ExchangeAuthorizationCodeRequest, opts ...grpc.CallOption) (*ExchangeAuthorizationCodeResponse, error) {
 	out := new(ExchangeAuthorizationCodeResponse)
 	err := c.cc.Invoke(ctx, "/oauthcredentials.v1.OAuthProviderService/ExchangeAuthorizationCode", in, out, opts...)
@@ -109,10 +96,11 @@ func (c *oAuthProviderServiceClient) ExchangeAuthorizationCode(ctx context.Conte
 // All implementations must embed UnimplementedOAuthProviderServiceServer
 // for forward compatibility
 type OAuthProviderServiceServer interface {
-	ListProviders(*ListProvidersRequest, OAuthProviderService_ListProvidersServer) error
+	ListProviders(context.Context, *ListProvidersRequest) (*ListProvidersResponse, error)
 	CreateProvider(context.Context, *CreateProviderRequest) (*CreateProviderResponse, error)
 	UpdateProvider(context.Context, *UpdateProviderRequest) (*UpdateProviderResponse, error)
 	DeleteProvider(context.Context, *DeleteProviderRequest) (*DeleteProviderResponse, error)
+	GetAuthorizationURL(context.Context, *GetAuthorizationURLRequest) (*GetAuthorizationURLResponse, error)
 	ExchangeAuthorizationCode(context.Context, *ExchangeAuthorizationCodeRequest) (*ExchangeAuthorizationCodeResponse, error)
 	mustEmbedUnimplementedOAuthProviderServiceServer()
 }
@@ -121,8 +109,8 @@ type OAuthProviderServiceServer interface {
 type UnimplementedOAuthProviderServiceServer struct {
 }
 
-func (UnimplementedOAuthProviderServiceServer) ListProviders(*ListProvidersRequest, OAuthProviderService_ListProvidersServer) error {
-	return status.Errorf(codes.Unimplemented, "method ListProviders not implemented")
+func (UnimplementedOAuthProviderServiceServer) ListProviders(context.Context, *ListProvidersRequest) (*ListProvidersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListProviders not implemented")
 }
 func (UnimplementedOAuthProviderServiceServer) CreateProvider(context.Context, *CreateProviderRequest) (*CreateProviderResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateProvider not implemented")
@@ -132,6 +120,9 @@ func (UnimplementedOAuthProviderServiceServer) UpdateProvider(context.Context, *
 }
 func (UnimplementedOAuthProviderServiceServer) DeleteProvider(context.Context, *DeleteProviderRequest) (*DeleteProviderResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteProvider not implemented")
+}
+func (UnimplementedOAuthProviderServiceServer) GetAuthorizationURL(context.Context, *GetAuthorizationURLRequest) (*GetAuthorizationURLResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAuthorizationURL not implemented")
 }
 func (UnimplementedOAuthProviderServiceServer) ExchangeAuthorizationCode(context.Context, *ExchangeAuthorizationCodeRequest) (*ExchangeAuthorizationCodeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ExchangeAuthorizationCode not implemented")
@@ -149,25 +140,22 @@ func RegisterOAuthProviderServiceServer(s grpc.ServiceRegistrar, srv OAuthProvid
 	s.RegisterService(&OAuthProviderService_ServiceDesc, srv)
 }
 
-func _OAuthProviderService_ListProviders_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(ListProvidersRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _OAuthProviderService_ListProviders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListProvidersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(OAuthProviderServiceServer).ListProviders(m, &oAuthProviderServiceListProvidersServer{stream})
-}
-
-type OAuthProviderService_ListProvidersServer interface {
-	Send(*ListProvidersResponse) error
-	grpc.ServerStream
-}
-
-type oAuthProviderServiceListProvidersServer struct {
-	grpc.ServerStream
-}
-
-func (x *oAuthProviderServiceListProvidersServer) Send(m *ListProvidersResponse) error {
-	return x.ServerStream.SendMsg(m)
+	if interceptor == nil {
+		return srv.(OAuthProviderServiceServer).ListProviders(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/oauthcredentials.v1.OAuthProviderService/ListProviders",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OAuthProviderServiceServer).ListProviders(ctx, req.(*ListProvidersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _OAuthProviderService_CreateProvider_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -224,6 +212,24 @@ func _OAuthProviderService_DeleteProvider_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _OAuthProviderService_GetAuthorizationURL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAuthorizationURLRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OAuthProviderServiceServer).GetAuthorizationURL(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/oauthcredentials.v1.OAuthProviderService/GetAuthorizationURL",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OAuthProviderServiceServer).GetAuthorizationURL(ctx, req.(*GetAuthorizationURLRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _OAuthProviderService_ExchangeAuthorizationCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ExchangeAuthorizationCodeRequest)
 	if err := dec(in); err != nil {
@@ -250,6 +256,10 @@ var OAuthProviderService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*OAuthProviderServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "ListProviders",
+			Handler:    _OAuthProviderService_ListProviders_Handler,
+		},
+		{
 			MethodName: "CreateProvider",
 			Handler:    _OAuthProviderService_CreateProvider_Handler,
 		},
@@ -262,16 +272,14 @@ var OAuthProviderService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _OAuthProviderService_DeleteProvider_Handler,
 		},
 		{
+			MethodName: "GetAuthorizationURL",
+			Handler:    _OAuthProviderService_GetAuthorizationURL_Handler,
+		},
+		{
 			MethodName: "ExchangeAuthorizationCode",
 			Handler:    _OAuthProviderService_ExchangeAuthorizationCode_Handler,
 		},
 	},
-	Streams: []grpc.StreamDesc{
-		{
-			StreamName:    "ListProviders",
-			Handler:       _OAuthProviderService_ListProviders_Handler,
-			ServerStreams: true,
-		},
-	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "oauthcredentials/v1/provider.proto",
 }

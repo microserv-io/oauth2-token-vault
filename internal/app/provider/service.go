@@ -7,6 +7,7 @@ import (
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/oauthapp"
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/oauth2"
+	"net/url"
 )
 
 // Encryptor is an interface for encrypting and decrypting data.
@@ -198,6 +199,41 @@ func (s *Service) DeleteProvider(ctx context.Context, name string) error {
 	return nil
 }
 
+// GetAuthorizationURL returns the authorization URL for a provider.
+func (s *Service) GetAuthorizationURL(ctx context.Context, input *GetAuthorizationURLInput) (*GetAuthorizationURLResponse, error) {
+	providerObj, err := s.providerRepository.FindByName(ctx, input.Provider)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find provider by name: %w", err)
+	}
+
+	oauth2Config := &oauth2.Config{
+		ClientID:     providerObj.ClientID,
+		ClientSecret: providerObj.ClientSecret,
+		RedirectURL:  providerObj.RedirectURL,
+		Scopes:       providerObj.Scopes,
+		AuthURL:      providerObj.AuthURL,
+		TokenURL:     providerObj.TokenURL,
+	}
+
+	redirectURL, err := s.oauth2Client.GetAuthorizationURL(oauth2Config, input.State)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get authorization url: %w", err)
+	}
+	if redirectURL == "" {
+		return nil, fmt.Errorf("failed to create redirect url for provider: %s", input.Provider)
+	}
+
+	parsedURL, err := url.Parse(redirectURL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse redirect url: %w", err)
+	}
+
+	return &GetAuthorizationURLResponse{
+		URL: parsedURL,
+	}, nil
+}
+
+// ExchangeAuthorizationCode exchanges an authorization code for an access token.
 func (s *Service) ExchangeAuthorizationCode(ctx context.Context, input *ExchangeAuthorizationCodeInput) error {
 	providerObj, err := s.providerRepository.FindByName(ctx, input.Provider)
 	if err != nil {

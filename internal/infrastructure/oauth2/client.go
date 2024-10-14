@@ -15,7 +15,6 @@ func NewClient() *Client {
 }
 
 func (c *Client) Exchange(ctx context.Context, config *oauth2.Config, code string) (*oauth2.Token, error) {
-	print(fmt.Sprintf("Exchanging code for token with config: %v", config))
 	client := oauth.Config{
 		ClientID:     config.ClientID,
 		ClientSecret: config.ClientSecret,
@@ -39,4 +38,19 @@ func (c *Client) Exchange(ctx context.Context, config *oauth2.Config, code strin
 		RefreshToken: token.RefreshToken,
 		ExpiresAt:    token.Expiry,
 	}, nil
+}
+
+func (c *Client) GetAuthorizationURL(config *oauth2.Config, state string) (string, error) {
+	client := oauth.Config{
+		ClientID:     config.ClientID,
+		ClientSecret: config.ClientSecret,
+		Endpoint: oauth.Endpoint{
+			AuthURL:  config.AuthURL,
+			TokenURL: config.TokenURL,
+		},
+		RedirectURL: config.RedirectURL,
+		Scopes:      config.Scopes,
+	}
+
+	return client.AuthCodeURL(state), nil
 }

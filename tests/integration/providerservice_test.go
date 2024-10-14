@@ -5,6 +5,7 @@ package integration
 import (
 	"context"
 	"fmt"
+	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/oauthapp"
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
 	"github.com/microserv-io/oauth-credentials-server/pkg/proto/oauthcredentials/v1"
 	"github.com/microserv-io/oauth-credentials-server/tests"
@@ -54,87 +55,102 @@ func TestCreateProvider(t *testing.T) {
 func TestListProviders(t *testing.T) {
 	t.Parallel()
 
-	app := tests.NewTestApp("config")
+	beforeTestFunc := func(t *testing.T, app *tests.TestApp) {
+		err := app.Repositories.Provider.Create(context.Background(), &provider.Provider{
+			Name:     "Test Provider",
+			AuthURL:  "https://example.com/auth",
+			TokenURL: "https://example.com/token",
+		})
 
-	err := app.Repositories.Provider.Create(context.Background(), &provider.Provider{
-		Name:     "Test Provider",
-		AuthURL:  "https://example.com/auth",
-		TokenURL: "https://example.com/token",
-	})
-
-	// Set up the gRPC connection
-	conn, err := grpc.NewClient(fmt.Sprintf("localhost:%d", app.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		t.Fatalf("Failed to connect to gRPC server: %v", err)
-	}
-	defer conn.Close()
-
-	client := oauthcredentials.NewOAuthProviderServiceClient(conn)
-
-	// List all providers
-	req := &oauthcredentials.ListProvidersRequest{}
-
-	stream, err := client.ListProviders(context.Background(), req)
-	if err != nil {
-		t.Fatalf("ListProviders failed: %v", err)
-	}
-
-	var providers []*oauthcredentials.OAuthProvider
-	for {
-		resp, err := stream.Recv()
 		if err != nil {
-			break
-		}
-		for _, p := range resp.GetOauthProviders() {
-			providers = append(providers, p)
+			t.Fatalf("Failed to create provider: %v", err)
 		}
 	}
 
-	assert.NotEmpty(t, providers)
+	requestFunc := func(conn *grpc.ClientConn, input interface{}) (interface{}, error) {
+		client := oauthcredentials.NewOAuthProviderServiceClient(conn)
+		resp, err := client.ListProviders(context.Background(), input.(*oauthcredentials.ListProvidersRequest))
+		return resp, err
+	}
 
-	app.Cleanup()
+	scenarios := []tests.GRPCScenario{
+		{
+			Name:           "list providers",
+			BeforeTestFunc: beforeTestFunc,
+			Input:          &oauthcredentials.ListProvidersRequest{},
+			Request:        requestFunc,
+			ExpectedResp: &oauthcredentials.ListProvidersResponse{
+				OauthProviders: []*oauthcredentials.OAuthProvider{
+					{
+						Name:     "Test Provider",
+						AuthUrl:  "https://example.com/auth",
+						TokenUrl: "https://example.com/token",
+					},
+				},
+			},
+		},
+	}
+
+	for _, scenario := range scenarios {
+		scenario.Test(t)
+	}
 }
 
 func TestUpdateProvider(t *testing.T) {
 	t.Parallel()
 
-	app := tests.NewTestApp("config")
+	beforeTestFunc := func(t *testing.T, app *tests.TestApp) {
+		err := app.Repositories.Provider.Create(context.Background(), &provider.Provider{
+			Name:     "Test Provider",
+			AuthURL:  "https://example.com/auth",
+			TokenURL: "https://example.com/token",
+		})
 
-	err := app.Repositories.Provider.Create(context.Background(), &provider.Provider{
-		Name:     "Test Provider",
-		AuthURL:  "https://example.com/auth",
-		TokenURL: "https://example.com/token",
-	})
-
-	conn, err := grpc.NewClient(fmt.Sprintf("localhost:%d", app.Port), grpc.WithTransportCredentials(
-		insecure.NewCredentials(),
-	))
-	if err != nil {
-		t.Fatalf("Failed to connect to gRPC server: %v", err)
-	}
-	defer conn.Close()
-
-	client := oauthcredentials.NewOAuthProviderServiceClient(conn)
-
-	// Update a provider
-	req := &oauthcredentials.UpdateProviderRequest{
-		Name:     "Test Provider",
-		AuthUrl:  "https://example.com/auth2",
-		TokenUrl: "https://example.com/token2",
-		// Add other necessary fields here
+		if err != nil {
+			t.Fatalf("Failed to create provider: %v", err)
+		}
 	}
 
-	resp, err := client.UpdateProvider(context.Background(), req)
-	if err != nil {
-		t.Fatalf("UpdateProvider failed: %v", err)
+	requestFunc := func(conn *grpc.ClientConn, input interface{}) (interface{}, error) {
+		client := oauthcredentials.NewOAuthProviderServiceClient(conn)
+		resp, err := client.UpdateProvider(context.Background(), input.(*oauthcredentials.UpdateProviderRequest))
+		return resp, err
 	}
 
-	assert.NotNil(t, resp)
-	assert.Equal(t, "Test Provider", resp.GetOauthProvider().GetName())
-	assert.Equal(t, "https://example.com/auth2", resp.GetOauthProvider().GetAuthUrl())
-	assert.Equal(t, "https://example.com/token2", resp.GetOauthProvider().GetTokenUrl())
+	scenarios := []tests.GRPCScenario{
+		{
+			Name:           "update provider",
+			BeforeTestFunc: beforeTestFunc,
+			Input: &oauthcredentials.UpdateProviderRequest{
+				Name:     "Test Provider",
+				AuthUrl:  "https://example.com/auth2",
+				TokenUrl: "https://example.com/token2",
+			},
+			Request: requestFunc,
+			ExpectedResp: &oauthcredentials.UpdateProviderResponse{
+				OauthProvider: &oauthcredentials.OAuthProvider{
+					Name:     "Test Provider",
+					AuthUrl:  "https://example.com/auth2",
+					TokenUrl: "https://example.com/token2",
+				},
+			},
+		},
+		{
+			Name:           "update provider that does not exist",
+			BeforeTestFunc: beforeTestFunc,
+			Input: &oauthcredentials.UpdateProviderRequest{
+				Name:     "Nonexistent Provider",
+				AuthUrl:  "https://example.com/auth2",
+				TokenUrl: "https://example.com/token2",
+			},
+			Request:     requestFunc,
+			ExpectedErr: "record not found",
+		},
+	}
 
-	app.Cleanup()
+	for _, scenario := range scenarios {
+		scenario.Test(t)
+	}
 }
 
 func TestExchangeAuthorizationCode(t *testing.T) {
@@ -142,94 +158,124 @@ func TestExchangeAuthorizationCode(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-
-		if r.FormValue("code") != "test-code" {
+		if r.FormValue("code") == "test-code" {
+			w.Write([]byte(`{"access_token": "test-access-token"}`))
+		} else {
 			w.WriteHeader(http.StatusBadRequest)
-			if _, err := w.Write([]byte(`{"error": "invalid_request"}`)); err != nil {
-				t.Fatalf("failed to write response: %v", err)
-			}
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		if _, err := w.Write([]byte(`{
-					"access_token": "new_access_token",
-					"token_type": "Bearer",
-					"refresh_token": "new_refresh_token",
-					"expires_in": 3600
-				}`)); err != nil {
-			t.Fatalf("failed to write response: %v", err)
+			w.Write([]byte(`{"error": "invalid_request"}`))
 		}
 	}))
 
 	defer ts.Close()
 
-	app := tests.NewTestApp("config")
-
-	app.Repositories.Provider.Create(context.Background(), &provider.Provider{
-		Name:     "Test Provider",
-		AuthURL:  "https://example.com/auth",
-		TokenURL: ts.URL,
-	})
-	// Set up the gRPC connection
-	conn, err := grpc.NewClient(fmt.Sprintf("localhost:%d", app.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		t.Fatalf("Failed to connect to gRPC server: %v", err)
-	}
-	defer conn.Close()
-
-	client := oauthcredentials.NewOAuthProviderServiceClient(conn)
-
-	// Exchange an authorization code
-	req := &oauthcredentials.ExchangeAuthorizationCodeRequest{
-		Provider: "Test Provider",
-		Code:     "test-code",
-		Owner:    "test-owner",
+	requestFunc := func(conn *grpc.ClientConn, input interface{}) (interface{}, error) {
+		client := oauthcredentials.NewOAuthProviderServiceClient(conn)
+		resp, err := client.ExchangeAuthorizationCode(context.Background(), input.(*oauthcredentials.ExchangeAuthorizationCodeRequest))
+		return resp, err
 	}
 
-	resp, err := client.ExchangeAuthorizationCode(context.Background(), req)
-	if err != nil {
-		t.Fatalf("ExchangeAuthorizationCode failed: %v", err)
+	beforeTestFunc := func(t *testing.T, app *tests.TestApp) {
+		err := app.Repositories.Provider.Create(context.Background(), &provider.Provider{
+			Name:     "Test Provider",
+			AuthURL:  "https://example.com/auth",
+			TokenURL: ts.URL,
+		})
+
+		if err != nil {
+			t.Fatalf("Failed to create provider: %v", err)
+		}
 	}
 
-	assert.NotNil(t, resp)
+	scenarios := []tests.GRPCScenario{
+		{
+			Name:           "exchange authorization code",
+			BeforeTestFunc: beforeTestFunc,
+			Input: &oauthcredentials.ExchangeAuthorizationCodeRequest{
+				Provider: "Test Provider",
+				Code:     "test-code",
+				Owner:    "test-owner",
+			},
+			Request:      requestFunc,
+			ExpectedResp: &oauthcredentials.ExchangeAuthorizationCodeResponse{},
+		},
+		{
+			Name:           "exchange authorization code with invalid code",
+			BeforeTestFunc: beforeTestFunc,
+			Input: &oauthcredentials.ExchangeAuthorizationCodeRequest{
+				Provider: "Test Provider",
+				Code:     "invalid-code",
+				Owner:    "test-owner",
+			},
+			Request:     requestFunc,
+			ExpectedErr: "invalid_request",
+		},
+	}
 
-	app.Cleanup()
+	for _, scenario := range scenarios {
+		scenario.Test(t)
+	}
 }
 
 func TestDeleteProvider(t *testing.T) {
-	// Set up the gRPC connection
-	app := tests.NewTestApp("config")
+	t.Parallel()
 
-	app.Repositories.Provider.Create(context.Background(), &provider.Provider{
-		Name:     "Test Provider",
-		AuthURL:  "https://example.com/auth",
-		TokenURL: "https://example.com/token",
-	})
-
-	conn, err := grpc.NewClient(fmt.Sprintf("localhost:%d", app.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		t.Fatalf("Failed to connect to gRPC server: %v", err)
-	}
-	defer conn.Close()
-
-	client := oauthcredentials.NewOAuthProviderServiceClient(conn)
-
-	// Delete a provider
-	req := &oauthcredentials.DeleteProviderRequest{
-		Id: "Test Provider",
+	requestFunc := func(conn *grpc.ClientConn, input interface{}) (interface{}, error) {
+		client := oauthcredentials.NewOAuthProviderServiceClient(conn)
+		resp, err := client.DeleteProvider(context.Background(), input.(*oauthcredentials.DeleteProviderRequest))
+		return resp, err
 	}
 
-	resp, err := client.DeleteProvider(context.Background(), req)
-	if err != nil {
-		t.Fatalf("DeleteProvider failed: %v", err)
+	beforeTestFunc := func(t *testing.T, app *tests.TestApp) {
+		if err := app.Repositories.Provider.Create(context.Background(), &provider.Provider{
+			Name: "Test Provider",
+		}); err != nil {
+			t.Fatalf("Failed to create provider 1: %v", err)
+		}
+
+		if err := app.Repositories.Provider.Create(context.Background(), &provider.Provider{
+			Name: "Test Provider 2",
+		}); err != nil {
+			t.Fatalf("Failed to create provider 2: %v", err)
+		}
+
+		if err := app.Repositories.OAuthApp.Create(context.Background(), &oauthapp.OAuthApp{
+			Provider: "Test Provider 2",
+		}); err != nil {
+			t.Fatalf("Failed to create oauth app: %v", err)
+		}
 	}
 
-	assert.NotNil(t, resp)
+	scenarios := []tests.GRPCScenario{
+		{
+			Name:           "delete provider",
+			BeforeTestFunc: beforeTestFunc,
+			Input: &oauthcredentials.DeleteProviderRequest{
+				Name: "Test Provider",
+			},
+			Request:      requestFunc,
+			ExpectedResp: &oauthcredentials.DeleteProviderResponse{},
+		},
+		{
+			Name:           "delete provider that does not exist",
+			BeforeTestFunc: beforeTestFunc,
+			Input: &oauthcredentials.DeleteProviderRequest{
+				Name: "Nonexistent Provider",
+			},
+			Request:     requestFunc,
+			ExpectedErr: "record not found",
+		},
+		{
+			Name:           "delete provider with associated oauth apps",
+			BeforeTestFunc: beforeTestFunc,
+			Input: &oauthcredentials.DeleteProviderRequest{
+				Name: "Test Provider 2",
+			},
+			Request:     requestFunc,
+			ExpectedErr: "provider has associated oauth apps",
+		},
+	}
 
-	p, err := app.Repositories.Provider.FindByName(context.Background(), "Test Provider")
-	assert.Nil(t, p)
-	assert.NotNil(t, err)
-
-	app.Cleanup()
+	for _, scenario := range scenarios {
+		scenario.Test(t)
+	}
 }

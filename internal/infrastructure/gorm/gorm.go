@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"log"
+	"gorm.io/gorm/logger"
 	"time"
 )
 
@@ -44,13 +44,14 @@ func Open(
 			postgres.New(postgres.Config{
 				DSN: connectionString,
 			}),
-			&gorm.Config{},
+			&gorm.Config{
+				Logger: logger.Default.LogMode(logger.Silent),
+			},
 		)
 		if err == nil {
 			db = dbVar
 			break
 		}
-		log.Printf("Failed to connect to database (attempt %d/%d): %v", i+1, maxAttempts, err)
 
 		i++
 

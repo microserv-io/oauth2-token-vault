@@ -13,12 +13,9 @@ type ProviderService interface {
 	ListProviders(ctx context.Context) (*provider.ListProvidersResponse, error)
 	CreateProvider(ctx context.Context, input *provider.CreateInput, ownerID string) (*provider.CreateProviderResponse, error)
 	UpdateProvider(ctx context.Context, name string, input *provider.UpdateInput) (*provider.UpdateProviderResponse, error)
-	DeleteProvider(ctx context.Context, id string) error
+	DeleteProvider(ctx context.Context, name string) error
 	ExchangeAuthorizationCode(ctx context.Context, input *provider.ExchangeAuthorizationCodeInput) error
-}
-
-type ListProviderStream interface {
-	oauthcredentials.OAuthProviderService_ListProvidersServer
+	GetAuthorizationURL(ctx context.Context, input *provider.GetAuthorizationURLInput) (*provider.GetAuthorizationURLResponse, error)
 }
 
 type ProviderServiceGRPC struct {
@@ -34,10 +31,10 @@ func NewProviderServiceGRPC(
 	}
 }
 
-func (s ProviderServiceGRPC) ListProviders(_ *oauthcredentials.ListProvidersRequest, stream oauthcredentials.OAuthProviderService_ListProvidersServer) error {
-	resp, err := s.providerService.ListProviders(stream.Context())
+func (s ProviderServiceGRPC) ListProviders(ctx context.Context, _ *oauthcredentials.ListProvidersRequest) (*oauthcredentials.ListProvidersResponse, error) {
+	resp, err := s.providerService.ListProviders(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to list providers: %w", err)
+		return nil, fmt.Errorf("failed to list providers: %w", err)
 	}
 
 	var oauthProviders []*oauthcredentials.OAuthProvider
@@ -52,11 +49,9 @@ func (s ProviderServiceGRPC) ListProviders(_ *oauthcredentials.ListProvidersRequ
 		})
 	}
 
-	if err := stream.Send(&oauthcredentials.ListProvidersResponse{OauthProviders: oauthProviders}); err != nil {
-		return fmt.Errorf("failed to send provider: %w", err)
-	}
-
-	return nil
+	return &oauthcredentials.ListProvidersResponse{
+		OauthProviders: oauthProviders,
+	}, nil
 }
 
 func (s ProviderServiceGRPC) CreateProvider(ctx context.Context, oauthProvider *oauthcredentials.CreateProviderRequest) (*oauthcredentials.CreateProviderResponse, error) {
@@ -108,12 +103,26 @@ func (s ProviderServiceGRPC) UpdateProvider(ctx context.Context, oauthProvider *
 }
 
 func (s ProviderServiceGRPC) DeleteProvider(ctx context.Context, oauthProvider *oauthcredentials.DeleteProviderRequest) (*oauthcredentials.DeleteProviderResponse, error) {
-	err := s.providerService.DeleteProvider(ctx, oauthProvider.GetId())
+	err := s.providerService.DeleteProvider(ctx, oauthProvider.GetName())
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete provider: %w", err)
 	}
 
 	return &oauthcredentials.DeleteProviderResponse{}, nil
+}
+
+func (s ProviderServiceGRPC) GetAuthorizationURL(ctx context.Context, input *oauthcredentials.GetAuthorizationURLRequest) (*oauthcredentials.GetAuthorizationURLResponse, error) {
+	resp, err := s.providerService.GetAuthorizationURL(ctx, &provider.GetAuthorizationURLInput{
+		Provider: input.GetProvider(),
+		State:    input.GetState(),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get authorization url: %w", err)
+	}
+
+	return &oauthcredentials.GetAuthorizationURLResponse{
+		Url: resp.URL.String(),
+	}, nil
 }
 
 func (s ProviderServiceGRPC) ExchangeAuthorizationCode(ctx context.Context, input *oauthcredentials.ExchangeAuthorizationCodeRequest) (*oauthcredentials.ExchangeAuthorizationCodeResponse, error) {

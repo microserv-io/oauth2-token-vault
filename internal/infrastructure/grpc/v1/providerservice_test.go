@@ -50,21 +50,16 @@ func TestProviderServiceGRPC_ListProviders(t *testing.T) {
 			tt.mockSetup(mockProviderService)
 
 			s := NewProviderServiceGRPC(mockProviderService)
-			stream := NewMockListProviderStream(t)
 
-			stream.EXPECT().Context().Return(context.TODO())
-
-			if tt.expectedResp != nil {
-				stream.EXPECT().Send(tt.expectedResp).Return(nil)
-			}
-
-			err := s.ListProviders(&oauthcredentials.ListProvidersRequest{}, stream)
+			resp, err := s.ListProviders(context.Background(), &oauthcredentials.ListProvidersRequest{})
 
 			if tt.expectedError != nil {
 				assert.EqualError(t, err, tt.expectedError.Error())
 			} else {
 				assert.NoError(t, err)
 			}
+
+			assert.Equal(t, tt.expectedResp, resp)
 		})
 	}
 }
@@ -219,7 +214,7 @@ func TestProviderServiceGRPC_DeleteProvider(t *testing.T) {
 			s := NewProviderServiceGRPC(mockProviderService)
 
 			_, err := s.DeleteProvider(context.TODO(), &oauthcredentials.DeleteProviderRequest{
-				Id: "provider1",
+				Name: "provider1",
 			})
 
 			if tt.expectedError != nil {

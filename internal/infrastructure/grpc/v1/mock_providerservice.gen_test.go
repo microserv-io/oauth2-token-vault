@@ -176,6 +176,65 @@ func (_c *MockProviderService_ExchangeAuthorizationCode_Call) RunAndReturn(run f
 	return _c
 }
 
+// GetAuthorizationURL provides a mock function with given fields: ctx, input
+func (_m *MockProviderService) GetAuthorizationURL(ctx context.Context, input *provider.GetAuthorizationURLInput) (*provider.GetAuthorizationURLResponse, error) {
+	ret := _m.Called(ctx, input)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAuthorizationURL")
+	}
+
+	var r0 *provider.GetAuthorizationURLResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *provider.GetAuthorizationURLInput) (*provider.GetAuthorizationURLResponse, error)); ok {
+		return rf(ctx, input)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *provider.GetAuthorizationURLInput) *provider.GetAuthorizationURLResponse); ok {
+		r0 = rf(ctx, input)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*provider.GetAuthorizationURLResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *provider.GetAuthorizationURLInput) error); ok {
+		r1 = rf(ctx, input)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockProviderService_GetAuthorizationURL_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAuthorizationURL'
+type MockProviderService_GetAuthorizationURL_Call struct {
+	*mock.Call
+}
+
+// GetAuthorizationURL is a helper method to define mock.On call
+//   - ctx context.Context
+//   - input *provider.GetAuthorizationURLInput
+func (_e *MockProviderService_Expecter) GetAuthorizationURL(ctx interface{}, input interface{}) *MockProviderService_GetAuthorizationURL_Call {
+	return &MockProviderService_GetAuthorizationURL_Call{Call: _e.mock.On("GetAuthorizationURL", ctx, input)}
+}
+
+func (_c *MockProviderService_GetAuthorizationURL_Call) Run(run func(ctx context.Context, input *provider.GetAuthorizationURLInput)) *MockProviderService_GetAuthorizationURL_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(*provider.GetAuthorizationURLInput))
+	})
+	return _c
+}
+
+func (_c *MockProviderService_GetAuthorizationURL_Call) Return(_a0 *provider.GetAuthorizationURLResponse, _a1 error) *MockProviderService_GetAuthorizationURL_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockProviderService_GetAuthorizationURL_Call) RunAndReturn(run func(context.Context, *provider.GetAuthorizationURLInput) (*provider.GetAuthorizationURLResponse, error)) *MockProviderService_GetAuthorizationURL_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ListProviders provides a mock function with given fields: ctx
 func (_m *MockProviderService) ListProviders(ctx context.Context) (*provider.ListProvidersResponse, error) {
 	ret := _m.Called(ctx)

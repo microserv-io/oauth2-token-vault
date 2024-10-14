@@ -5,14 +5,18 @@ package oauthcredentials.v1;
 option go_package = "github.com/microserv-io/oauth-credentials-server/pkg/proto/oauthcredentials/v1;oauthcredentials";
 
 service OAuthProviderService {
-  rpc ListProviders(ListProvidersRequest) returns (stream ListProvidersResponse) {}
+  rpc ListProviders(ListProvidersRequest) returns (ListProvidersResponse) {}
   rpc CreateProvider(CreateProviderRequest) returns (CreateProviderResponse) {}
   rpc UpdateProvider(UpdateProviderRequest) returns (UpdateProviderResponse) {}
   rpc DeleteProvider(DeleteProviderRequest) returns (DeleteProviderResponse) {}
+  rpc GetAuthorizationURL(GetAuthorizationURLRequest) returns (GetAuthorizationURLResponse) {}
   rpc ExchangeAuthorizationCode(ExchangeAuthorizationCodeRequest) returns (ExchangeAuthorizationCodeResponse) {}
 }
 
-message ListProvidersRequest {}
+message ListProvidersRequest {
+  optional int32 page = 1;
+  optional int32 limit = 2;
+}
 
 message ListProvidersResponse {
   repeated OAuthProvider oauth_providers = 1;
@@ -33,14 +37,13 @@ message CreateProviderResponse {
 }
 
 message UpdateProviderRequest {
-  string id = 1;
-  string name = 2;
-  string client_id = 3;
-  string client_secret = 4;
-  string redirect_uri = 5;
-  repeated string scopes = 6;
-  string auth_url = 7;
-  string token_url = 8;
+  string name = 1;
+  string client_id = 2;
+  string client_secret = 3;
+  string redirect_uri = 4;
+  repeated string scopes = 5;
+  string auth_url = 6;
+  string token_url = 7;
 }
 
 message UpdateProviderResponse {
@@ -48,10 +51,19 @@ message UpdateProviderResponse {
 }
 
 message DeleteProviderRequest {
-  string id = 1;
+  string name = 1;
 }
 
 message DeleteProviderResponse {}
+
+message GetAuthorizationURLRequest {
+  string provider = 1;
+  string state = 2;
+}
+
+message GetAuthorizationURLResponse {
+  string url = 1;
+}
 
 message ExchangeAuthorizationCodeRequest {
   string provider = 1;
@@ -62,7 +74,6 @@ message ExchangeAuthorizationCodeRequest {
 message ExchangeAuthorizationCodeResponse {}
 
 message OAuthProvider {
-  string id = 1;
   string name = 2;
   string client_id = 3;
   string client_secret = 4;

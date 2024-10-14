@@ -82,6 +82,63 @@ func (_c *MockOAuth2Client_Exchange_Call) RunAndReturn(run func(context.Context,
 	return _c
 }
 
+// GetAuthorizationURL provides a mock function with given fields: config, state
+func (_m *MockOAuth2Client) GetAuthorizationURL(config *oauth2.Config, state string) (string, error) {
+	ret := _m.Called(config, state)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAuthorizationURL")
+	}
+
+	var r0 string
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*oauth2.Config, string) (string, error)); ok {
+		return rf(config, state)
+	}
+	if rf, ok := ret.Get(0).(func(*oauth2.Config, string) string); ok {
+		r0 = rf(config, state)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	if rf, ok := ret.Get(1).(func(*oauth2.Config, string) error); ok {
+		r1 = rf(config, state)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockOAuth2Client_GetAuthorizationURL_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAuthorizationURL'
+type MockOAuth2Client_GetAuthorizationURL_Call struct {
+	*mock.Call
+}
+
+// GetAuthorizationURL is a helper method to define mock.On call
+//   - config *oauth2.Config
+//   - state string
+func (_e *MockOAuth2Client_Expecter) GetAuthorizationURL(config interface{}, state interface{}) *MockOAuth2Client_GetAuthorizationURL_Call {
+	return &MockOAuth2Client_GetAuthorizationURL_Call{Call: _e.mock.On("GetAuthorizationURL", config, state)}
+}
+
+func (_c *MockOAuth2Client_GetAuthorizationURL_Call) Run(run func(config *oauth2.Config, state string)) *MockOAuth2Client_GetAuthorizationURL_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(*oauth2.Config), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockOAuth2Client_GetAuthorizationURL_Call) Return(_a0 string, _a1 error) *MockOAuth2Client_GetAuthorizationURL_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockOAuth2Client_GetAuthorizationURL_Call) RunAndReturn(run func(*oauth2.Config, string) (string, error)) *MockOAuth2Client_GetAuthorizationURL_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewMockOAuth2Client creates a new instance of MockOAuth2Client. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMockOAuth2Client(t interface {

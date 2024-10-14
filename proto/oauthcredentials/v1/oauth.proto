@@ -5,27 +5,19 @@ package oauthcredentials.v1;
 option go_package = "github.com/microserv-io/oauth-credentials-server/pkg/proto/oauthcredentials/v1;oauthcredentials";
 
 service OAuthService {
-  rpc ListOAuths(ListOAuthsRequest) returns (stream ListOAuthsResponse) {}
-  rpc GetOAuthByID(GetOAuthByIDRequest) returns (GetOAuthByIDResponse) {}
+  rpc ListOAuthsForOwner(ListOAuthsForOwnerRequest) returns (ListOAuthsForOwnerResponse) {}
   rpc GetOAuthByProvider(GetOAuthByProviderRequest) returns (GetOAuthByProviderResponse) {}
   rpc GetOAuthCredentialByProvider(GetOAuthCredentialByProviderRequest) returns (GetOAuthCredentialByProviderResponse) {}
 }
 
-message ListOAuthsRequest {
+message ListOAuthsForOwnerRequest {
   string owner = 1;
+  optional int32 page = 2;
+  optional int32 limit = 3;
 }
 
-message ListOAuthsResponse {
-  repeated OAuth oauths = 1;
-}
-
-message GetOAuthByIDRequest {
-  string owner = 1;
-  string id = 2;
-}
-
-message GetOAuthByIDResponse {
-  OAuth oauth = 1;
+message ListOAuthsForOwnerResponse {
+  repeated OAuthApp oauth_apps = 1;
 }
 
 message GetOAuthByProviderRequest {
@@ -34,7 +26,7 @@ message GetOAuthByProviderRequest {
 }
 
 message GetOAuthByProviderResponse {
-  OAuth oauth = 1;
+  OAuthApp oauth_app = 1;
 }
 
 message GetOAuthCredentialByProviderRequest {
@@ -53,7 +45,7 @@ message OAuthTokenRequest {
   string redirect_uri = 4;
 }
 
-message OAuth {
+message OAuthApp {
   string id = 1;
   string owner = 2;
   string provider = 3;

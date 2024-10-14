@@ -6,9 +6,7 @@ import (
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/oauthapp"
 	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
 	oauth3 "github.com/microserv-io/oauth-credentials-server/internal/domain/oauth2"
-	"golang.org/x/oauth2"
 	"log/slog"
-	"net/url"
 	"strconv"
 )
 
@@ -82,42 +80,6 @@ func (s *Service) GetOAuthForProviderAndOwner(ctx context.Context, providerID st
 			ProviderID: oauthApp.Provider,
 			Scopes:     oauthApp.Scopes,
 		},
-	}, nil
-}
-
-func (s *Service) CreateAuthorizationURLForProvider(ctx context.Context, providerID string, scopes []string, state string) (*CreateAuthorizationURLForProviderResponse, error) {
-	providerObj, err := s.providerRepository.FindByName(ctx, providerID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to find provider by name: %w", err)
-	}
-
-	if len(scopes) == 0 {
-		scopes = providerObj.Scopes
-	}
-
-	oauth2Config := oauth2.Config{
-		ClientID:     providerObj.ClientID,
-		ClientSecret: providerObj.ClientSecret,
-		RedirectURL:  providerObj.RedirectURL,
-		Scopes:       scopes,
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  providerObj.AuthURL,
-			TokenURL: providerObj.TokenURL,
-		},
-	}
-
-	redirectURL := oauth2Config.AuthCodeURL(state)
-	if redirectURL == "" {
-		return nil, fmt.Errorf("failed to create redirect url for provider: %s", providerID)
-	}
-
-	parsedURL, err := url.Parse(redirectURL)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse redirect url: %w", err)
-	}
-
-	return &CreateAuthorizationURLForProviderResponse{
-		URL: parsedURL,
 	}, nil
 }
 
