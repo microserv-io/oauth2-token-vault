@@ -1,8 +1,8 @@
 package tests
 
 import (
-	"github.com/microserv-io/oauth-credentials-server/internal"
-	"github.com/microserv-io/oauth-credentials-server/internal/infrastructure/gorm"
+	"github.com/microserv-io/oauth2-token-vault/internal"
+	"github.com/microserv-io/oauth2-token-vault/internal/infrastructure/gorm"
 	"log"
 	"strings"
 )

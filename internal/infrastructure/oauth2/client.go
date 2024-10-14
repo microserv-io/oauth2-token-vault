@@ -3,7 +3,7 @@ package oauth2
 import (
 	"context"
 	"fmt"
-	"github.com/microserv-io/oauth-credentials-server/internal/domain/oauth2"
+	"github.com/microserv-io/oauth2-token-vault/internal/domain/oauth2"
 	oauth "golang.org/x/oauth2"
 )
 

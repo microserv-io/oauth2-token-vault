@@ -7,7 +7,7 @@ build:
     push: false
 
   artifacts:
-    - image: microserv-io/oauth-credentials-server
+    - image: microserv-io/oauth2-token-vault
       context: .
       docker:
         dockerfile: Dockerfile
@@ -21,10 +21,10 @@ deploy:
   kubeContext: orbstack
   helm:
     releases:
-      - name: microservio-oauth-credentials-server
-        namespace: microservio-oauth-credentials-server
+      - name: microservio-oauth2-token-vault
+        namespace: microservio-oauth2-token-vault
         createNamespace: true
-        chartPath: ../../../helm/charts/components/oauth-credentials-server
+        chartPath: ../../../helm/charts/components/oauth2-token-vault
         setValues:
           "image.pullPolicy": "IfNotPresent"
           "config": |-
@@ -38,9 +38,9 @@ deploy:
               scopes: ["read"]
             allow_provider_registration: true
           postgresql.enabled: true
-          postgresql.auth.username: oauth-credentials-server
+          postgresql.auth.username: oauth2-token-vault
           postgresql.auth.password: unsafePostgresPassword
-          postgresql.auth.database: oauth-credentials-server
+          postgresql.auth.database: oauth2-token-vault
         setValueTemplates:
           "image.tag": "{{ .IMAGE_TAG_microserv_io_oauth_credentials_server }}"
           "image.repository": "{{ .IMAGE_REPO_microserv_io_oauth_credentials_server }}"

@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/microserv-io/oauth-credentials-server/pkg/proto/oauthcredentials/v1"
+	"github.com/microserv-io/oauth2-token-vault/pkg/proto/oauthcredentials/v1"
 	"golang.org/x/net/context"
 )
 

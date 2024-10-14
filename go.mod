@@ -1,4 +1,4 @@
-module github.com/microserv-io/oauth-credentials-server
+module github.com/microserv-io/oauth2-token-vault
 
 go 1.23
 

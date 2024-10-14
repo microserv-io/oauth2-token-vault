@@ -1,9 +1,9 @@
-# oauth-credentials-server
-[![codecov](https://codecov.io/gh/microserv-io/oauth-credentials-server/graph/badge.svg?token=5TTII2E9NM)](https://codecov.io/gh/microserv-io/oauth-credentials-server)
-[![golangci-lint](https://github.com/microserv-io/oauth-credentials-server/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/microserv-io/oauth-credentials-server/actions/workflows/golangci-lint.yml)
-[![Run Tests](https://github.com/microserv-io/oauth-credentials-server/actions/workflows/tests.yml/badge.svg)](https://github.com/microserv-io/oauth-credentials-server/actions/workflows/tests.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/microserv-io/oauth-credentials-server)](https://goreportcard.com/report/github.com/microserv-io/oauth-credentials-server)
-[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/microserv-io/oauth-credentials-server)]( )
+# oauth2-token-vault
+[![codecov](https://codecov.io/gh/microserv-io/oauth2-token-vault/graph/badge.svg?token=5TTII2E9NM)](https://codecov.io/gh/microserv-io/oauth2-token-vault)
+[![golangci-lint](https://github.com/microserv-io/oauth2-token-vault/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/microserv-io/oauth2-token-vault/actions/workflows/golangci-lint.yml)
+[![Run Tests](https://github.com/microserv-io/oauth2-token-vault/actions/workflows/tests.yml/badge.svg)](https://github.com/microserv-io/oauth2-token-vault/actions/workflows/tests.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/microserv-io/oauth2-token-vault)](https://goreportcard.com/report/github.com/microserv-io/oauth2-token-vault)
+[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/microserv-io/oauth2-token-vault)]( )
 > [!WARNING]
 > 
 > This repository is a work in progress and is not yet ready for use. APIs are subject to change and will not be backwards compatible until release.
@@ -58,7 +58,7 @@ Communication is done over gRPC. The repository contains a Go client that can be
 can install it by running the following command:
 
 ```bash
-go get github.com/microserv-io/oauth-credentials-server@latest
+go get github.com/microserv-io/oauth2-token-vault@latest
 ```
 
 ### Retrieving resource servers with credentials
@@ -72,7 +72,7 @@ package main
 
 import (
 	"context"
-	"github.com/microserv-io/oauth-credentials-server/pkg/oauth2/tokensource"
+	"github.com/microserv-io/oauth2-token-vault/pkg/oauth2/tokensource"
 	"golang.org/x/oauth2"
 	"net/url"
 )

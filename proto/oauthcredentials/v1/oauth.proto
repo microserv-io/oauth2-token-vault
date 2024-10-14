@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package oauthcredentials.v1;
 
-option go_package = "github.com/microserv-io/oauth-credentials-server/pkg/proto/oauthcredentials/v1;oauthcredentials";
+option go_package = "github.com/microserv-io/oauth2-token-vault/pkg/proto/oauthcredentials/v1;oauthcredentials";
 
 service OAuthService {
   rpc ListOAuthsForOwner(ListOAuthsForOwnerRequest) returns (ListOAuthsForOwnerResponse) {}

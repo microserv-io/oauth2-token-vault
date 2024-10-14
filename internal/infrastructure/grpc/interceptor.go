@@ -2,7 +2,7 @@ package grpc
 
 import (
 	"context"
-	"github.com/microserv-io/oauth-credentials-server/internal/logging"
+	"github.com/microserv-io/oauth2-token-vault/internal/logging"
 	"google.golang.org/grpc"
 	"log/slog"
 )

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/lib/pq"
-	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
+	"github.com/microserv-io/oauth2-token-vault/internal/domain/models/provider"
 	"gorm.io/gorm"
 	"time"
 )

@@ -5,7 +5,7 @@ package v1
 import (
 	context "context"
 
-	provider "github.com/microserv-io/oauth-credentials-server/internal/app/provider"
+	provider "github.com/microserv-io/oauth2-token-vault/internal/app/provider"
 	mock "github.com/stretchr/testify/mock"
 )
 

@@ -4,10 +4,10 @@ package integration
 
 import (
 	"context"
-	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/oauthapp"
-	"github.com/microserv-io/oauth-credentials-server/internal/domain/models/provider"
-	"github.com/microserv-io/oauth-credentials-server/pkg/proto/oauthcredentials/v1"
-	"github.com/microserv-io/oauth-credentials-server/tests"
+	"github.com/microserv-io/oauth2-token-vault/internal/domain/models/oauthapp"
+	"github.com/microserv-io/oauth2-token-vault/internal/domain/models/provider"
+	"github.com/microserv-io/oauth2-token-vault/pkg/proto/oauthcredentials/v1"
+	"github.com/microserv-io/oauth2-token-vault/tests"
 	"google.golang.org/grpc"
 	"net/http"
 	"net/http/httptest"

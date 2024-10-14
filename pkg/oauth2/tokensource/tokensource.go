@@ -3,7 +3,7 @@ package tokensource
 import (
 	"context"
 	"fmt"
-	"github.com/microserv-io/oauth-credentials-server/pkg/proto/oauthcredentials/v1"
+	"github.com/microserv-io/oauth2-token-vault/pkg/proto/oauthcredentials/v1"
 	"golang.org/x/oauth2"
 )
 

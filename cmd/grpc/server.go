@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/microserv-io/oauth-credentials-server/internal"
+	"github.com/microserv-io/oauth2-token-vault/internal"
 	"log"
 )
 
