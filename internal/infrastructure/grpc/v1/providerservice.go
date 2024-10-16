@@ -41,11 +41,12 @@ func (s ProviderServiceGRPC) ListProviders(ctx context.Context, _ *oauthcredenti
 
 	for _, p := range resp.Providers {
 		oauthProviders = append(oauthProviders, &oauthcredentials.OAuthProvider{
-			Name:     p.Name,
-			AuthUrl:  p.AuthURL,
-			TokenUrl: p.TokenURL,
-			Scopes:   p.Scopes,
-			ClientId: p.ClientID,
+			Name:        p.Name,
+			AuthUrl:     p.AuthURL,
+			TokenUrl:    p.TokenURL,
+			Scopes:      p.Scopes,
+			ClientId:    p.ClientID,
+			RedirectUri: p.RedirectURI,
 		})
 	}
 
@@ -70,11 +71,12 @@ func (s ProviderServiceGRPC) CreateProvider(ctx context.Context, oauthProvider *
 
 	return &oauthcredentials.CreateProviderResponse{
 		OauthProvider: &oauthcredentials.OAuthProvider{
-			Name:     resp.Provider.Name,
-			AuthUrl:  resp.Provider.AuthURL,
-			TokenUrl: resp.Provider.TokenURL,
-			Scopes:   resp.Provider.Scopes,
-			ClientId: resp.Provider.ClientID,
+			Name:        resp.Provider.Name,
+			AuthUrl:     resp.Provider.AuthURL,
+			TokenUrl:    resp.Provider.TokenURL,
+			RedirectUri: resp.Provider.RedirectURI,
+			Scopes:      resp.Provider.Scopes,
+			ClientId:    resp.Provider.ClientID,
 		},
 	}, nil
 }
@@ -93,11 +95,12 @@ func (s ProviderServiceGRPC) UpdateProvider(ctx context.Context, oauthProvider *
 
 	return &oauthcredentials.UpdateProviderResponse{
 		OauthProvider: &oauthcredentials.OAuthProvider{
-			Name:     resp.Provider.Name,
-			AuthUrl:  resp.Provider.AuthURL,
-			TokenUrl: resp.Provider.TokenURL,
-			Scopes:   resp.Provider.Scopes,
-			ClientId: resp.Provider.ClientID,
+			Name:        resp.Provider.Name,
+			AuthUrl:     resp.Provider.AuthURL,
+			TokenUrl:    resp.Provider.TokenURL,
+			RedirectUri: resp.Provider.RedirectURI,
+			Scopes:      resp.Provider.Scopes,
+			ClientId:    resp.Provider.ClientID,
 		},
 	}, nil
 }
