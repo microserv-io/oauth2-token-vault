@@ -30,12 +30,12 @@ type Provider struct {
 	UpdatedAt    time.Time
 }
 
-func NewProvider(name, clientID, clientSecret, redirectURL, authURL, tokenURL string, scopes []string, source string) (Provider, error) {
+func NewProvider(name, clientID, clientSecret, redirectURL, authURL, tokenURL string, scopes []string, source string) (*Provider, error) {
 	if source != string(SourceConfig) && source != string(SourceAPI) {
-		return Provider{}, ErrInvalidSource
+		return nil, ErrInvalidSource
 	}
 
-	return Provider{
+	return &Provider{
 		Name:         name,
 		ClientID:     clientID,
 		ClientSecret: clientSecret,

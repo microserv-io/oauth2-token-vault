@@ -8,5 +8,5 @@ type Repository interface {
 	ListForProvider(ctx context.Context, providerID string) ([]*OAuthApp, error)
 	Create(ctx context.Context, app *OAuthApp) error
 	UpdateByID(ctx context.Context, id uint, updateFn func(app *OAuthApp) error) error
-	Delete(ctx context.Context, id string) error
+	Delete(ctx context.Context, id uint) error
 }

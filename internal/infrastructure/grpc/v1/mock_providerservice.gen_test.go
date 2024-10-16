@@ -23,7 +23,7 @@ func (_m *MockProviderService) EXPECT() *MockProviderService_Expecter {
 }
 
 // CreateProvider provides a mock function with given fields: ctx, input, ownerID
-func (_m *MockProviderService) CreateProvider(ctx context.Context, input *provider.CreateInput, ownerID string) (*provider.CreateProviderResponse, error) {
+func (_m *MockProviderService) CreateProvider(ctx context.Context, input *provider.CreateProviderRequest, ownerID string) (*provider.CreateProviderResponse, error) {
 	ret := _m.Called(ctx, input, ownerID)
 
 	if len(ret) == 0 {
@@ -32,10 +32,10 @@ func (_m *MockProviderService) CreateProvider(ctx context.Context, input *provid
 
 	var r0 *provider.CreateProviderResponse
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *provider.CreateInput, string) (*provider.CreateProviderResponse, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *provider.CreateProviderRequest, string) (*provider.CreateProviderResponse, error)); ok {
 		return rf(ctx, input, ownerID)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *provider.CreateInput, string) *provider.CreateProviderResponse); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *provider.CreateProviderRequest, string) *provider.CreateProviderResponse); ok {
 		r0 = rf(ctx, input, ownerID)
 	} else {
 		if ret.Get(0) != nil {
@@ -43,7 +43,7 @@ func (_m *MockProviderService) CreateProvider(ctx context.Context, input *provid
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *provider.CreateInput, string) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *provider.CreateProviderRequest, string) error); ok {
 		r1 = rf(ctx, input, ownerID)
 	} else {
 		r1 = ret.Error(1)
@@ -59,15 +59,15 @@ type MockProviderService_CreateProvider_Call struct {
 
 // CreateProvider is a helper method to define mock.On call
 //   - ctx context.Context
-//   - input *provider.CreateInput
+//   - input *provider.CreateProviderRequest
 //   - ownerID string
 func (_e *MockProviderService_Expecter) CreateProvider(ctx interface{}, input interface{}, ownerID interface{}) *MockProviderService_CreateProvider_Call {
 	return &MockProviderService_CreateProvider_Call{Call: _e.mock.On("CreateProvider", ctx, input, ownerID)}
 }
 
-func (_c *MockProviderService_CreateProvider_Call) Run(run func(ctx context.Context, input *provider.CreateInput, ownerID string)) *MockProviderService_CreateProvider_Call {
+func (_c *MockProviderService_CreateProvider_Call) Run(run func(ctx context.Context, input *provider.CreateProviderRequest, ownerID string)) *MockProviderService_CreateProvider_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*provider.CreateInput), args[2].(string))
+		run(args[0].(context.Context), args[1].(*provider.CreateProviderRequest), args[2].(string))
 	})
 	return _c
 }
@@ -77,22 +77,22 @@ func (_c *MockProviderService_CreateProvider_Call) Return(_a0 *provider.CreatePr
 	return _c
 }
 
-func (_c *MockProviderService_CreateProvider_Call) RunAndReturn(run func(context.Context, *provider.CreateInput, string) (*provider.CreateProviderResponse, error)) *MockProviderService_CreateProvider_Call {
+func (_c *MockProviderService_CreateProvider_Call) RunAndReturn(run func(context.Context, *provider.CreateProviderRequest, string) (*provider.CreateProviderResponse, error)) *MockProviderService_CreateProvider_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// DeleteProvider provides a mock function with given fields: ctx, id
-func (_m *MockProviderService) DeleteProvider(ctx context.Context, id string) error {
-	ret := _m.Called(ctx, id)
+// DeleteProvider provides a mock function with given fields: ctx, request
+func (_m *MockProviderService) DeleteProvider(ctx context.Context, request *provider.DeleteProviderRequest) error {
+	ret := _m.Called(ctx, request)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeleteProvider")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
-		r0 = rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context, *provider.DeleteProviderRequest) error); ok {
+		r0 = rf(ctx, request)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -107,14 +107,14 @@ type MockProviderService_DeleteProvider_Call struct {
 
 // DeleteProvider is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id string
-func (_e *MockProviderService_Expecter) DeleteProvider(ctx interface{}, id interface{}) *MockProviderService_DeleteProvider_Call {
-	return &MockProviderService_DeleteProvider_Call{Call: _e.mock.On("DeleteProvider", ctx, id)}
+//   - request *provider.DeleteProviderRequest
+func (_e *MockProviderService_Expecter) DeleteProvider(ctx interface{}, request interface{}) *MockProviderService_DeleteProvider_Call {
+	return &MockProviderService_DeleteProvider_Call{Call: _e.mock.On("DeleteProvider", ctx, request)}
 }
 
-func (_c *MockProviderService_DeleteProvider_Call) Run(run func(ctx context.Context, id string)) *MockProviderService_DeleteProvider_Call {
+func (_c *MockProviderService_DeleteProvider_Call) Run(run func(ctx context.Context, request *provider.DeleteProviderRequest)) *MockProviderService_DeleteProvider_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string))
+		run(args[0].(context.Context), args[1].(*provider.DeleteProviderRequest))
 	})
 	return _c
 }
@@ -124,13 +124,13 @@ func (_c *MockProviderService_DeleteProvider_Call) Return(_a0 error) *MockProvid
 	return _c
 }
 
-func (_c *MockProviderService_DeleteProvider_Call) RunAndReturn(run func(context.Context, string) error) *MockProviderService_DeleteProvider_Call {
+func (_c *MockProviderService_DeleteProvider_Call) RunAndReturn(run func(context.Context, *provider.DeleteProviderRequest) error) *MockProviderService_DeleteProvider_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // ExchangeAuthorizationCode provides a mock function with given fields: ctx, input
-func (_m *MockProviderService) ExchangeAuthorizationCode(ctx context.Context, input *provider.ExchangeAuthorizationCodeInput) error {
+func (_m *MockProviderService) ExchangeAuthorizationCode(ctx context.Context, input *provider.ExchangeAuthorizationCodeRequest) error {
 	ret := _m.Called(ctx, input)
 
 	if len(ret) == 0 {
@@ -138,7 +138,7 @@ func (_m *MockProviderService) ExchangeAuthorizationCode(ctx context.Context, in
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *provider.ExchangeAuthorizationCodeInput) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *provider.ExchangeAuthorizationCodeRequest) error); ok {
 		r0 = rf(ctx, input)
 	} else {
 		r0 = ret.Error(0)
@@ -154,14 +154,14 @@ type MockProviderService_ExchangeAuthorizationCode_Call struct {
 
 // ExchangeAuthorizationCode is a helper method to define mock.On call
 //   - ctx context.Context
-//   - input *provider.ExchangeAuthorizationCodeInput
+//   - input *provider.ExchangeAuthorizationCodeRequest
 func (_e *MockProviderService_Expecter) ExchangeAuthorizationCode(ctx interface{}, input interface{}) *MockProviderService_ExchangeAuthorizationCode_Call {
 	return &MockProviderService_ExchangeAuthorizationCode_Call{Call: _e.mock.On("ExchangeAuthorizationCode", ctx, input)}
 }
 
-func (_c *MockProviderService_ExchangeAuthorizationCode_Call) Run(run func(ctx context.Context, input *provider.ExchangeAuthorizationCodeInput)) *MockProviderService_ExchangeAuthorizationCode_Call {
+func (_c *MockProviderService_ExchangeAuthorizationCode_Call) Run(run func(ctx context.Context, input *provider.ExchangeAuthorizationCodeRequest)) *MockProviderService_ExchangeAuthorizationCode_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*provider.ExchangeAuthorizationCodeInput))
+		run(args[0].(context.Context), args[1].(*provider.ExchangeAuthorizationCodeRequest))
 	})
 	return _c
 }
@@ -171,13 +171,13 @@ func (_c *MockProviderService_ExchangeAuthorizationCode_Call) Return(_a0 error) 
 	return _c
 }
 
-func (_c *MockProviderService_ExchangeAuthorizationCode_Call) RunAndReturn(run func(context.Context, *provider.ExchangeAuthorizationCodeInput) error) *MockProviderService_ExchangeAuthorizationCode_Call {
+func (_c *MockProviderService_ExchangeAuthorizationCode_Call) RunAndReturn(run func(context.Context, *provider.ExchangeAuthorizationCodeRequest) error) *MockProviderService_ExchangeAuthorizationCode_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetAuthorizationURL provides a mock function with given fields: ctx, input
-func (_m *MockProviderService) GetAuthorizationURL(ctx context.Context, input *provider.GetAuthorizationURLInput) (*provider.GetAuthorizationURLResponse, error) {
+func (_m *MockProviderService) GetAuthorizationURL(ctx context.Context, input *provider.GetAuthorizationURLRequest) (*provider.GetAuthorizationURLResponse, error) {
 	ret := _m.Called(ctx, input)
 
 	if len(ret) == 0 {
@@ -186,10 +186,10 @@ func (_m *MockProviderService) GetAuthorizationURL(ctx context.Context, input *p
 
 	var r0 *provider.GetAuthorizationURLResponse
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *provider.GetAuthorizationURLInput) (*provider.GetAuthorizationURLResponse, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *provider.GetAuthorizationURLRequest) (*provider.GetAuthorizationURLResponse, error)); ok {
 		return rf(ctx, input)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *provider.GetAuthorizationURLInput) *provider.GetAuthorizationURLResponse); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *provider.GetAuthorizationURLRequest) *provider.GetAuthorizationURLResponse); ok {
 		r0 = rf(ctx, input)
 	} else {
 		if ret.Get(0) != nil {
@@ -197,7 +197,7 @@ func (_m *MockProviderService) GetAuthorizationURL(ctx context.Context, input *p
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *provider.GetAuthorizationURLInput) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *provider.GetAuthorizationURLRequest) error); ok {
 		r1 = rf(ctx, input)
 	} else {
 		r1 = ret.Error(1)
@@ -213,14 +213,14 @@ type MockProviderService_GetAuthorizationURL_Call struct {
 
 // GetAuthorizationURL is a helper method to define mock.On call
 //   - ctx context.Context
-//   - input *provider.GetAuthorizationURLInput
+//   - input *provider.GetAuthorizationURLRequest
 func (_e *MockProviderService_Expecter) GetAuthorizationURL(ctx interface{}, input interface{}) *MockProviderService_GetAuthorizationURL_Call {
 	return &MockProviderService_GetAuthorizationURL_Call{Call: _e.mock.On("GetAuthorizationURL", ctx, input)}
 }
 
-func (_c *MockProviderService_GetAuthorizationURL_Call) Run(run func(ctx context.Context, input *provider.GetAuthorizationURLInput)) *MockProviderService_GetAuthorizationURL_Call {
+func (_c *MockProviderService_GetAuthorizationURL_Call) Run(run func(ctx context.Context, input *provider.GetAuthorizationURLRequest)) *MockProviderService_GetAuthorizationURL_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(*provider.GetAuthorizationURLInput))
+		run(args[0].(context.Context), args[1].(*provider.GetAuthorizationURLRequest))
 	})
 	return _c
 }
@@ -230,7 +230,7 @@ func (_c *MockProviderService_GetAuthorizationURL_Call) Return(_a0 *provider.Get
 	return _c
 }
 
-func (_c *MockProviderService_GetAuthorizationURL_Call) RunAndReturn(run func(context.Context, *provider.GetAuthorizationURLInput) (*provider.GetAuthorizationURLResponse, error)) *MockProviderService_GetAuthorizationURL_Call {
+func (_c *MockProviderService_GetAuthorizationURL_Call) RunAndReturn(run func(context.Context, *provider.GetAuthorizationURLRequest) (*provider.GetAuthorizationURLResponse, error)) *MockProviderService_GetAuthorizationURL_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -294,7 +294,7 @@ func (_c *MockProviderService_ListProviders_Call) RunAndReturn(run func(context.
 }
 
 // UpdateProvider provides a mock function with given fields: ctx, name, input
-func (_m *MockProviderService) UpdateProvider(ctx context.Context, name string, input *provider.UpdateInput) (*provider.UpdateProviderResponse, error) {
+func (_m *MockProviderService) UpdateProvider(ctx context.Context, name string, input *provider.UpdateProviderRequest) (*provider.UpdateProviderResponse, error) {
 	ret := _m.Called(ctx, name, input)
 
 	if len(ret) == 0 {
@@ -303,10 +303,10 @@ func (_m *MockProviderService) UpdateProvider(ctx context.Context, name string, 
 
 	var r0 *provider.UpdateProviderResponse
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, *provider.UpdateInput) (*provider.UpdateProviderResponse, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, *provider.UpdateProviderRequest) (*provider.UpdateProviderResponse, error)); ok {
 		return rf(ctx, name, input)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string, *provider.UpdateInput) *provider.UpdateProviderResponse); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, *provider.UpdateProviderRequest) *provider.UpdateProviderResponse); ok {
 		r0 = rf(ctx, name, input)
 	} else {
 		if ret.Get(0) != nil {
@@ -314,7 +314,7 @@ func (_m *MockProviderService) UpdateProvider(ctx context.Context, name string, 
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string, *provider.UpdateInput) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, string, *provider.UpdateProviderRequest) error); ok {
 		r1 = rf(ctx, name, input)
 	} else {
 		r1 = ret.Error(1)
@@ -331,14 +331,14 @@ type MockProviderService_UpdateProvider_Call struct {
 // UpdateProvider is a helper method to define mock.On call
 //   - ctx context.Context
 //   - name string
-//   - input *provider.UpdateInput
+//   - input *provider.UpdateProviderRequest
 func (_e *MockProviderService_Expecter) UpdateProvider(ctx interface{}, name interface{}, input interface{}) *MockProviderService_UpdateProvider_Call {
 	return &MockProviderService_UpdateProvider_Call{Call: _e.mock.On("UpdateProvider", ctx, name, input)}
 }
 
-func (_c *MockProviderService_UpdateProvider_Call) Run(run func(ctx context.Context, name string, input *provider.UpdateInput)) *MockProviderService_UpdateProvider_Call {
+func (_c *MockProviderService_UpdateProvider_Call) Run(run func(ctx context.Context, name string, input *provider.UpdateProviderRequest)) *MockProviderService_UpdateProvider_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(*provider.UpdateInput))
+		run(args[0].(context.Context), args[1].(string), args[2].(*provider.UpdateProviderRequest))
 	})
 	return _c
 }
@@ -348,7 +348,7 @@ func (_c *MockProviderService_UpdateProvider_Call) Return(_a0 *provider.UpdatePr
 	return _c
 }
 
-func (_c *MockProviderService_UpdateProvider_Call) RunAndReturn(run func(context.Context, string, *provider.UpdateInput) (*provider.UpdateProviderResponse, error)) *MockProviderService_UpdateProvider_Call {
+func (_c *MockProviderService_UpdateProvider_Call) RunAndReturn(run func(context.Context, string, *provider.UpdateProviderRequest) (*provider.UpdateProviderResponse, error)) *MockProviderService_UpdateProvider_Call {
 	_c.Call.Return(run)
 	return _c
 }

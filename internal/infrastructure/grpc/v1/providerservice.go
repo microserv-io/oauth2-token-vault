@@ -11,11 +11,11 @@ var _ oauthcredentials.OAuthProviderServiceServer = &ProviderServiceGRPC{}
 
 type ProviderService interface {
 	ListProviders(ctx context.Context) (*provider.ListProvidersResponse, error)
-	CreateProvider(ctx context.Context, input *provider.CreateInput, ownerID string) (*provider.CreateProviderResponse, error)
-	UpdateProvider(ctx context.Context, name string, input *provider.UpdateInput) (*provider.UpdateProviderResponse, error)
-	DeleteProvider(ctx context.Context, name string) error
-	ExchangeAuthorizationCode(ctx context.Context, input *provider.ExchangeAuthorizationCodeInput) error
-	GetAuthorizationURL(ctx context.Context, input *provider.GetAuthorizationURLInput) (*provider.GetAuthorizationURLResponse, error)
+	CreateProvider(ctx context.Context, input *provider.CreateProviderRequest, ownerID string) (*provider.CreateProviderResponse, error)
+	UpdateProvider(ctx context.Context, name string, input *provider.UpdateProviderRequest) (*provider.UpdateProviderResponse, error)
+	DeleteProvider(ctx context.Context, request *provider.DeleteProviderRequest) error
+	ExchangeAuthorizationCode(ctx context.Context, input *provider.ExchangeAuthorizationCodeRequest) error
+	GetAuthorizationURL(ctx context.Context, input *provider.GetAuthorizationURLRequest) (*provider.GetAuthorizationURLResponse, error)
 }
 
 type ProviderServiceGRPC struct {
@@ -55,7 +55,7 @@ func (s ProviderServiceGRPC) ListProviders(ctx context.Context, _ *oauthcredenti
 }
 
 func (s ProviderServiceGRPC) CreateProvider(ctx context.Context, oauthProvider *oauthcredentials.CreateProviderRequest) (*oauthcredentials.CreateProviderResponse, error) {
-	resp, err := s.providerService.CreateProvider(ctx, &provider.CreateInput{
+	resp, err := s.providerService.CreateProvider(ctx, &provider.CreateProviderRequest{
 		Name:         oauthProvider.Name,
 		AuthURL:      oauthProvider.AuthUrl,
 		TokenURL:     oauthProvider.TokenUrl,
@@ -79,7 +79,7 @@ func (s ProviderServiceGRPC) CreateProvider(ctx context.Context, oauthProvider *
 	}, nil
 }
 func (s ProviderServiceGRPC) UpdateProvider(ctx context.Context, oauthProvider *oauthcredentials.UpdateProviderRequest) (*oauthcredentials.UpdateProviderResponse, error) {
-	resp, err := s.providerService.UpdateProvider(ctx, oauthProvider.Name, &provider.UpdateInput{
+	resp, err := s.providerService.UpdateProvider(ctx, oauthProvider.Name, &provider.UpdateProviderRequest{
 		ClientID:     oauthProvider.ClientId,
 		ClientSecret: oauthProvider.ClientSecret,
 		RedirectURI:  oauthProvider.RedirectUri,
@@ -103,7 +103,7 @@ func (s ProviderServiceGRPC) UpdateProvider(ctx context.Context, oauthProvider *
 }
 
 func (s ProviderServiceGRPC) DeleteProvider(ctx context.Context, oauthProvider *oauthcredentials.DeleteProviderRequest) (*oauthcredentials.DeleteProviderResponse, error) {
-	err := s.providerService.DeleteProvider(ctx, oauthProvider.GetName())
+	err := s.providerService.DeleteProvider(ctx, &provider.DeleteProviderRequest{Name: oauthProvider.GetName()})
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete provider: %w", err)
 	}
@@ -112,7 +112,7 @@ func (s ProviderServiceGRPC) DeleteProvider(ctx context.Context, oauthProvider *
 }
 
 func (s ProviderServiceGRPC) GetAuthorizationURL(ctx context.Context, input *oauthcredentials.GetAuthorizationURLRequest) (*oauthcredentials.GetAuthorizationURLResponse, error) {
-	resp, err := s.providerService.GetAuthorizationURL(ctx, &provider.GetAuthorizationURLInput{
+	resp, err := s.providerService.GetAuthorizationURL(ctx, &provider.GetAuthorizationURLRequest{
 		Provider: input.GetProvider(),
 		State:    input.GetState(),
 	})
@@ -126,7 +126,7 @@ func (s ProviderServiceGRPC) GetAuthorizationURL(ctx context.Context, input *oau
 }
 
 func (s ProviderServiceGRPC) ExchangeAuthorizationCode(ctx context.Context, input *oauthcredentials.ExchangeAuthorizationCodeRequest) (*oauthcredentials.ExchangeAuthorizationCodeResponse, error) {
-	if err := s.providerService.ExchangeAuthorizationCode(ctx, &provider.ExchangeAuthorizationCodeInput{
+	if err := s.providerService.ExchangeAuthorizationCode(ctx, &provider.ExchangeAuthorizationCodeRequest{
 		Provider: input.GetProvider(),
 		Code:     input.GetCode(),
 	}); err != nil {

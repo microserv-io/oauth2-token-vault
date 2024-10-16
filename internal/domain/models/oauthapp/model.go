@@ -14,3 +14,15 @@ type OAuthApp struct {
 	UpdatedAt    time.Time
 	OwnerID      string
 }
+
+func NewOAuthApp(provider, accessToken, refreshToken, tokenType string, expiresAt time.Time, scopes []string, ownerID string) *OAuthApp {
+	return &OAuthApp{
+		Provider:     provider,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		TokenType:    tokenType,
+		ExpiresAt:    expiresAt,
+		Scopes:       scopes,
+		OwnerID:      ownerID,
+	}
+}
