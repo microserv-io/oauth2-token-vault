@@ -57,9 +57,13 @@ func TestListProviders(t *testing.T) {
 
 	beforeTestFunc := func(t *testing.T, app *tests.TestApp) {
 		err := app.Repositories.Provider.Create(context.Background(), &provider.Provider{
-			Name:     "Test Provider",
-			AuthURL:  "https://example.com/auth",
-			TokenURL: "https://example.com/token",
+			Name:         "Test Provider",
+			AuthURL:      "https://example.com/auth",
+			TokenURL:     "https://example.com/token",
+			RedirectURL:  "https://example.com/redirect",
+			Scopes:       []string{"scope1"},
+			ClientID:     "client1",
+			ClientSecret: "secret1",
 		})
 
 		if err != nil {
@@ -82,9 +86,12 @@ func TestListProviders(t *testing.T) {
 			ExpectedResp: &oauthcredentials.ListProvidersResponse{
 				OauthProviders: []*oauthcredentials.OAuthProvider{
 					{
-						Name:     "Test Provider",
-						AuthUrl:  "https://example.com/auth",
-						TokenUrl: "https://example.com/token",
+						Name:        "Test Provider",
+						AuthUrl:     "https://example.com/auth",
+						TokenUrl:    "https://example.com/token",
+						RedirectUri: "https://example.com/redirect",
+						ClientId:    "client1",
+						Scopes:      []string{"scope1"},
 					},
 				},
 			},
@@ -122,16 +129,21 @@ func TestUpdateProvider(t *testing.T) {
 			Name:           "update provider",
 			BeforeTestFunc: beforeTestFunc,
 			Input: &oauthcredentials.UpdateProviderRequest{
-				Name:     "Test Provider",
-				AuthUrl:  "https://example.com/auth2",
-				TokenUrl: "https://example.com/token2",
+				Name:         "Test Provider",
+				AuthUrl:      "https://example.com/auth-new",
+				TokenUrl:     "https://example.com/token-new",
+				RedirectUri:  "https://example.com/redirect-new",
+				ClientId:     "new-client1",
+				ClientSecret: "new-secret1",
 			},
 			Request: requestFunc,
 			ExpectedResp: &oauthcredentials.UpdateProviderResponse{
 				OauthProvider: &oauthcredentials.OAuthProvider{
-					Name:     "Test Provider",
-					AuthUrl:  "https://example.com/auth2",
-					TokenUrl: "https://example.com/token2",
+					Name:        "Test Provider",
+					AuthUrl:     "https://example.com/auth-new",
+					TokenUrl:    "https://example.com/token-new",
+					RedirectUri: "https://example.com/redirect-new",
+					ClientId:    "new-client1",
 				},
 			},
 		},
@@ -176,9 +188,13 @@ func TestExchangeAuthorizationCode(t *testing.T) {
 
 	beforeTestFunc := func(t *testing.T, app *tests.TestApp) {
 		err := app.Repositories.Provider.Create(context.Background(), &provider.Provider{
-			Name:     "Test Provider",
-			AuthURL:  "https://example.com/auth",
-			TokenURL: ts.URL,
+			Name:         "Test Provider",
+			AuthURL:      "https://example.com/auth",
+			TokenURL:     ts.URL,
+			RedirectURL:  "https://example.com/redirect",
+			Scopes:       []string{"scope1"},
+			ClientID:     "client1",
+			ClientSecret: "secret1",
 		})
 
 		if err != nil {
