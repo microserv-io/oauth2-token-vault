@@ -6,12 +6,10 @@ import (
 	"github.com/microserv-io/oauth2-token-vault/internal/app/oauthapp"
 	"github.com/microserv-io/oauth2-token-vault/internal/app/provider"
 	"github.com/microserv-io/oauth2-token-vault/internal/config"
-	domainprovider "github.com/microserv-io/oauth2-token-vault/internal/domain/models/provider"
 	"github.com/microserv-io/oauth2-token-vault/internal/infrastructure/encryption"
 	gormimpl "github.com/microserv-io/oauth2-token-vault/internal/infrastructure/gorm"
 	grpcimpl "github.com/microserv-io/oauth2-token-vault/internal/infrastructure/grpc"
 	"github.com/microserv-io/oauth2-token-vault/internal/infrastructure/oauth2"
-	"github.com/microserv-io/oauth2-token-vault/internal/usecase"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
 	"log/slog"
@@ -72,27 +70,6 @@ func NewApplication(cfgPath string, opts ...Option) (*Application, error) {
 	oauthAppRepository := gormimpl.NewOAuthAppRepository(app.db)
 	providerRepository := gormimpl.NewProviderRepository(app.db)
 
-	var providers []*domainprovider.Provider
-	for _, p := range configObj.Providers {
-		providers = append(providers, &domainprovider.Provider{
-			Name:         p.Name,
-			ClientID:     p.ClientID,
-			ClientSecret: p.ClientSecret,
-			RedirectURL:  p.RedirectURL,
-			AuthURL:      p.AuthURL,
-			TokenURL:     p.TokenURL,
-			Scopes:       p.Scopes,
-		})
-	}
-
-	if err := usecase.NewLoadProvidersUseCase(
-		providerRepository,
-	).Execute(
-		context.Background(), providers,
-	); err != nil {
-		return nil, fmt.Errorf("failed to load providers: %v", err)
-	}
-
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	encryptor, err := encryption.NewAesGcmEncryptor("random-key")
@@ -113,6 +90,22 @@ func NewApplication(cfgPath string, opts ...Option) (*Application, error) {
 		encryptor,
 		oauth2.NewClient(),
 	)
+
+	syncProviderRequest := &provider.SyncProviderRequest{}
+	for _, p := range configObj.Providers {
+		syncProviderRequest.Providers = append(syncProviderRequest.Providers, &provider.SyncProvider{
+			Name:         p.Name,
+			ClientID:     p.ClientID,
+			ClientSecret: p.ClientSecret,
+			RedirectURI:  p.RedirectURL,
+			AuthURL:      p.AuthURL,
+			TokenURL:     p.TokenURL,
+			Scopes:       p.Scopes,
+		})
+	}
+	if err := providerService.SyncProviders(context.Background(), syncProviderRequest); err != nil {
+		return nil, fmt.Errorf("failed to sync providers: %v", err)
+	}
 
 	app.server = grpcimpl.NewServer(
 		oauthAppService,

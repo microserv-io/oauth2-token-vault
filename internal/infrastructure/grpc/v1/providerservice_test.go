@@ -74,7 +74,7 @@ func TestProviderServiceGRPC_CreateProvider(t *testing.T) {
 		{
 			name: "success",
 			mockSetup: func(mockProviderService *MockProviderService) {
-				mockProviderService.EXPECT().CreateProvider(mock.Anything, &provider.CreateInput{
+				mockProviderService.EXPECT().CreateProvider(mock.Anything, &provider.CreateProviderRequest{
 					Name:    "provider1",
 					AuthURL: "http://auth.url",
 				}, "api").Return(&provider.CreateProviderResponse{
@@ -93,7 +93,7 @@ func TestProviderServiceGRPC_CreateProvider(t *testing.T) {
 		{
 			name: "error",
 			mockSetup: func(mockProviderService *MockProviderService) {
-				mockProviderService.EXPECT().CreateProvider(mock.Anything, &provider.CreateInput{
+				mockProviderService.EXPECT().CreateProvider(mock.Anything, &provider.CreateProviderRequest{
 					Name:    "provider1",
 					AuthURL: "http://auth.url",
 				}, "api").Return(nil, errors.New("some error"))
@@ -135,7 +135,7 @@ func TestProviderServiceGRPC_UpdateProvider(t *testing.T) {
 		{
 			name: "success",
 			mockSetup: func(mockProviderService *MockProviderService) {
-				mockProviderService.EXPECT().UpdateProvider(mock.Anything, "provider1", &provider.UpdateInput{
+				mockProviderService.EXPECT().UpdateProvider(mock.Anything, "provider1", &provider.UpdateProviderRequest{
 					AuthURL: "http://auth.url",
 				}).Return(&provider.UpdateProviderResponse{
 					Provider: &provider.Provider{
@@ -153,7 +153,7 @@ func TestProviderServiceGRPC_UpdateProvider(t *testing.T) {
 		{
 			name: "error",
 			mockSetup: func(mockProviderService *MockProviderService) {
-				mockProviderService.EXPECT().UpdateProvider(mock.Anything, "provider1", &provider.UpdateInput{
+				mockProviderService.EXPECT().UpdateProvider(mock.Anything, "provider1", &provider.UpdateProviderRequest{
 					AuthURL: "http://auth.url",
 				}).Return(nil, errors.New("some error"))
 			},
@@ -193,14 +193,18 @@ func TestProviderServiceGRPC_DeleteProvider(t *testing.T) {
 		{
 			name: "success",
 			mockSetup: func(mockProviderService *MockProviderService) {
-				mockProviderService.EXPECT().DeleteProvider(mock.Anything, "provider1").Return(nil)
+				mockProviderService.EXPECT().DeleteProvider(mock.Anything, &provider.DeleteProviderRequest{
+					Name: "provider1",
+				}).Return(nil)
 			},
 			expectedError: nil,
 		},
 		{
 			name: "error",
 			mockSetup: func(mockProviderService *MockProviderService) {
-				mockProviderService.EXPECT().DeleteProvider(mock.Anything, "provider1").Return(errors.New("some error"))
+				mockProviderService.EXPECT().DeleteProvider(mock.Anything, &provider.DeleteProviderRequest{
+					Name: "provider1",
+				}).Return(errors.New("some error"))
 			},
 			expectedError: errors.New("failed to delete provider: some error"),
 		},
@@ -235,7 +239,7 @@ func TestProviderServiceGRPC_ExchangeAuthorizationCode(t *testing.T) {
 		{
 			name: "success",
 			mockSetup: func(mockProviderService *MockProviderService) {
-				mockProviderService.EXPECT().ExchangeAuthorizationCode(mock.Anything, &provider.ExchangeAuthorizationCodeInput{
+				mockProviderService.EXPECT().ExchangeAuthorizationCode(mock.Anything, &provider.ExchangeAuthorizationCodeRequest{
 					Provider: "provider1",
 				}).Return(nil)
 			},
@@ -244,7 +248,7 @@ func TestProviderServiceGRPC_ExchangeAuthorizationCode(t *testing.T) {
 		{
 			name: "error",
 			mockSetup: func(mockProviderService *MockProviderService) {
-				mockProviderService.EXPECT().ExchangeAuthorizationCode(mock.Anything, &provider.ExchangeAuthorizationCodeInput{
+				mockProviderService.EXPECT().ExchangeAuthorizationCode(mock.Anything, &provider.ExchangeAuthorizationCodeRequest{
 					Provider: "provider1",
 				}).Return(errors.New("some error"))
 			},

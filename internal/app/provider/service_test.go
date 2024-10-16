@@ -154,7 +154,7 @@ func TestService_CreateProvider(t *testing.T) {
 	tests := []struct {
 		name          string
 		mockSetup     func(mockProviderRepo *MockProviderRepository)
-		input         *CreateInput
+		input         *CreateProviderRequest
 		source        string
 		expectedError error
 		expectedResp  *CreateProviderResponse
@@ -164,7 +164,7 @@ func TestService_CreateProvider(t *testing.T) {
 			mockSetup: func(mockProviderRepo *MockProviderRepository) {
 				mockProviderRepo.EXPECT().Create(mock.Anything, mock.Anything).Return(nil)
 			},
-			input: &CreateInput{
+			input: &CreateProviderRequest{
 				Name:         "provider1",
 				ClientID:     "client_id",
 				ClientSecret: "client_secret",
@@ -191,7 +191,7 @@ func TestService_CreateProvider(t *testing.T) {
 			mockSetup: func(mockProviderRepo *MockProviderRepository) {
 				mockProviderRepo.EXPECT().Create(mock.Anything, mock.Anything).Return(errors.New("some error"))
 			},
-			input: &CreateInput{
+			input: &CreateProviderRequest{
 				Name:         "provider1",
 				ClientID:     "client_id",
 				ClientSecret: "client_secret",
@@ -229,7 +229,7 @@ func TestService_UpdateProvider(t *testing.T) {
 	tests := []struct {
 		name          string
 		mockSetup     func(mockProviderRepo *MockProviderRepository, mockEncryptor *MockEncryptor)
-		input         *UpdateInput
+		input         *UpdateProviderRequest
 		expectedError error
 		expectedResp  *UpdateProviderResponse
 	}{
@@ -248,7 +248,7 @@ func TestService_UpdateProvider(t *testing.T) {
 				mockEncryptor.EXPECT().Encrypt("new_client_secret").Return("encrypted_secret", nil)
 				mockProviderRepo.EXPECT().Update(mock.Anything, mock.Anything).Return(nil)
 			},
-			input: &UpdateInput{
+			input: &UpdateProviderRequest{
 				ClientID:     "new_client_id",
 				ClientSecret: "new_client_secret",
 				RedirectURI:  "http://new.redirect.url",
@@ -274,7 +274,7 @@ func TestService_UpdateProvider(t *testing.T) {
 			mockSetup: func(mockProviderRepo *MockProviderRepository, mockEncryptor *MockEncryptor) {
 				mockProviderRepo.EXPECT().FindByName(mock.Anything, "provider1").Return(nil, errors.New("some error"))
 			},
-			input: &UpdateInput{
+			input: &UpdateProviderRequest{
 				ClientID:     "new_client_id",
 				ClientSecret: "new_client_secret",
 				RedirectURI:  "http://new.redirect.url",
@@ -357,7 +357,10 @@ func TestService_DeleteProvider(t *testing.T) {
 			}
 
 			tt.mockSetup(mockProviderRepo, mockOAuthAppRepo)
-			err := service.DeleteProvider(context.Background(), "provider1")
+			err := service.DeleteProvider(context.Background(), &DeleteProviderRequest{
+				Name:                     "provider1",
+				DeleteConnectedOAuthApps: false,
+			})
 			if tt.expectedError != nil {
 				assert.EqualError(t, err, tt.expectedError.Error())
 			} else {
@@ -370,7 +373,7 @@ func TestService_DeleteProvider(t *testing.T) {
 func TestService_GetAuthorizationURL(t *testing.T) {
 	tests := []struct {
 		name          string
-		input         *GetAuthorizationURLInput
+		input         *GetAuthorizationURLRequest
 		state         string
 		mockSetup     func(providerRepository *MockProviderRepository, oauthClient *MockOAuth2Client)
 		expectedError bool
@@ -378,7 +381,7 @@ func TestService_GetAuthorizationURL(t *testing.T) {
 	}{
 		{
 			name:  "Success",
-			input: &GetAuthorizationURLInput{Provider: "provider1", State: "state1"},
+			input: &GetAuthorizationURLRequest{Provider: "provider1", State: "state1"},
 			state: "state1",
 			mockSetup: func(providerRepository *MockProviderRepository, oauthClient *MockOAuth2Client) {
 				providerRepository.EXPECT().FindByName(mock.Anything, "provider1").Return(&provider.Provider{
@@ -407,7 +410,7 @@ func TestService_GetAuthorizationURL(t *testing.T) {
 		},
 		{
 			name:  "Failure",
-			input: &GetAuthorizationURLInput{Provider: "provider2", State: "state2"},
+			input: &GetAuthorizationURLRequest{Provider: "provider2", State: "state2"},
 			state: "state2",
 			mockSetup: func(providerRepository *MockProviderRepository, oauthClient *MockOAuth2Client) {
 				providerRepository.EXPECT().FindByName(mock.Anything, "provider2").Return(nil, errors.New("database error"))
@@ -444,7 +447,7 @@ func TestService_ExchangeAuthorizationCode(t *testing.T) {
 	tests := []struct {
 		name          string
 		mockSetup     func(mockProviderRepo *MockProviderRepository, mockOAuth2Client *MockOAuth2Client, oauthAppRepo *MockOAuthAppRepository)
-		input         *ExchangeAuthorizationCodeInput
+		input         *ExchangeAuthorizationCodeRequest
 		expectedError error
 	}{
 		{
@@ -485,7 +488,7 @@ func TestService_ExchangeAuthorizationCode(t *testing.T) {
 					ExpiresAt:    time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 				}).Return(nil)
 			},
-			input: &ExchangeAuthorizationCodeInput{
+			input: &ExchangeAuthorizationCodeRequest{
 				Provider: "provider1",
 				OwnerID:  "owner1",
 				Code:     "code",
@@ -497,7 +500,7 @@ func TestService_ExchangeAuthorizationCode(t *testing.T) {
 			mockSetup: func(mockProviderRepo *MockProviderRepository, mockOAuth2Client *MockOAuth2Client, oauthAppRepo *MockOAuthAppRepository) {
 				mockProviderRepo.EXPECT().FindByName(mock.Anything, "provider1").Return(nil, errors.New("some error"))
 			},
-			input: &ExchangeAuthorizationCodeInput{
+			input: &ExchangeAuthorizationCodeRequest{
 				Provider: "provider1",
 				OwnerID:  "owner1",
 				Code:     "code",
@@ -526,7 +529,7 @@ func TestService_ExchangeAuthorizationCode(t *testing.T) {
 					Scopes:       mockProvider.Scopes,
 				}, "code").Return(nil, errors.New("some error"))
 			},
-			input: &ExchangeAuthorizationCodeInput{
+			input: &ExchangeAuthorizationCodeRequest{
 				Provider: "provider1",
 				OwnerID:  "owner1",
 				Code:     "code",
@@ -571,7 +574,7 @@ func TestService_ExchangeAuthorizationCode(t *testing.T) {
 					ExpiresAt:    time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
 				}).Return(errors.New("some error"))
 			},
-			input: &ExchangeAuthorizationCodeInput{
+			input: &ExchangeAuthorizationCodeRequest{
 				Provider: "provider1",
 				OwnerID:  "owner1",
 				Code:     "code",
@@ -593,6 +596,102 @@ func TestService_ExchangeAuthorizationCode(t *testing.T) {
 
 			tt.mockSetup(mockProviderRepo, mockOAuth2Client, mockOAuthAppRepo)
 			err := service.ExchangeAuthorizationCode(context.Background(), tt.input)
+			if tt.expectedError != nil {
+				assert.EqualError(t, err, tt.expectedError.Error())
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestService_SyncProviders(t *testing.T) {
+	tests := []struct {
+		name          string
+		mockSetup     func(mockProviderRepo *MockProviderRepository, mockOAuthRepo *MockOAuthAppRepository)
+		input         *SyncProviderRequest
+		expectedError error
+	}{
+		{
+			name: "success - update",
+			mockSetup: func(mockProviderRepo *MockProviderRepository, repository *MockOAuthAppRepository) {
+				mockProviderRepo.EXPECT().List(mock.Anything).Return([]*provider.Provider{
+					{
+						Name: "provider1",
+					},
+					{
+						Name: "provider2",
+					},
+					{
+						Name: "provider3",
+					},
+				}, nil)
+
+				mockProviderRepo.EXPECT().FindByName(mock.Anything, "provider1").Return(&provider.Provider{
+					Name:     "provider1",
+					ClientID: "old_client_id",
+				}, nil)
+				mockProviderRepo.EXPECT().Update(mock.Anything, &provider.Provider{
+					Name:         "provider1",
+					ClientID:     "client_id",
+					ClientSecret: "client_secret",
+					RedirectURL:  "http://redirect.url",
+					AuthURL:      "http://auth.url",
+					TokenURL:     "http://token.url",
+					Scopes:       []string{"scope1", "scope2"},
+					Source:       "config",
+				}).Return(nil)
+
+				mockProviderRepo.EXPECT().FindByName(mock.Anything, "provider2").Return(nil, errors.New("some error"))
+				mockProviderRepo.EXPECT().Create(mock.Anything, &provider.Provider{
+					Name:         "provider2",
+					ClientID:     "client_id",
+					ClientSecret: "client_secret",
+					RedirectURL:  "http://redirect.url",
+					AuthURL:      "http://auth.url",
+					TokenURL:     "http://token.url",
+					Scopes:       []string{"scope1", "scope2"},
+					Source:       "config",
+				}).Return(nil)
+
+				mockProviderRepo.EXPECT().Delete(mock.Anything, "provider3").Return(nil)
+			},
+			input: &SyncProviderRequest{
+				Providers: []*SyncProvider{
+					{
+						Name:         "provider1",
+						ClientID:     "client_id",
+						ClientSecret: "client_secret",
+						RedirectURI:  "http://redirect.url",
+						AuthURL:      "http://auth.url",
+						TokenURL:     "http://token.url",
+						Scopes:       []string{"scope1", "scope2"},
+					},
+					{
+						Name:         "provider2",
+						ClientID:     "client_id",
+						ClientSecret: "client_secret",
+						RedirectURI:  "http://redirect.url",
+						AuthURL:      "http://auth.url",
+						TokenURL:     "http://token.url",
+						Scopes:       []string{"scope1", "scope2"},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockProviderRepo := NewMockProviderRepository(t)
+			mockOAuthRepo := NewMockOAuthAppRepository(t)
+			service := &Service{
+				providerRepository: mockProviderRepo,
+				oauthAppRepository: mockOAuthRepo,
+			}
+
+			tt.mockSetup(mockProviderRepo, mockOAuthRepo)
+			err := service.SyncProviders(context.Background(), tt.input)
 			if tt.expectedError != nil {
 				assert.EqualError(t, err, tt.expectedError.Error())
 			} else {

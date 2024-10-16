@@ -131,7 +131,7 @@ func (r OAuthAppRepository) UpdateByID(ctx context.Context, id uint, updateFn fu
 	return nil
 }
 
-func (r OAuthAppRepository) Delete(ctx context.Context, id string) error {
+func (r OAuthAppRepository) Delete(ctx context.Context, id uint) error {
 	if err := r.db.WithContext(ctx).Delete(&OAuthApp{}, id).Error; err != nil {
 		return err
 	}

@@ -7,6 +7,7 @@ import (
 	"github.com/microserv-io/oauth2-token-vault/internal/domain/models/oauthapp"
 	"github.com/microserv-io/oauth2-token-vault/internal/domain/models/provider"
 	"github.com/microserv-io/oauth2-token-vault/internal/domain/oauth2"
+	"log/slog"
 	"net/url"
 )
 
@@ -119,14 +120,53 @@ func (s *Service) ListProviders(ctx context.Context) (*ListProvidersResponse, er
 
 }
 
+// SyncProviders syncs a list of providers with the repository. Providers not in the list are deleted.
+func (s *Service) SyncProviders(ctx context.Context, request *SyncProviderRequest) error {
+	existingProviders, err := s.providerRepository.List(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to list existing providers: %w", err)
+	}
+
+	providersMap := make(map[string]*SyncProvider)
+	for _, p := range request.Providers {
+		providersMap[p.Name] = p
+	}
+
+	for _, existingProvider := range existingProviders {
+		if _, found := providersMap[existingProvider.Name]; !found {
+			if err := s.providerRepository.Delete(ctx, existingProvider.Name); err != nil {
+				slog.Warn("failed to delete provider")
+			}
+		}
+	}
+
+	for _, providerToSync := range request.Providers {
+		providerObj, err := provider.NewProvider(providerToSync.Name, providerToSync.ClientID, providerToSync.ClientSecret, providerToSync.RedirectURI, providerToSync.AuthURL, providerToSync.TokenURL, providerToSync.Scopes, "config")
+		if err != nil {
+			return fmt.Errorf("failed to create provider: %w", err)
+		}
+		if _, err := s.providerRepository.FindByName(ctx, providerObj.Name); err != nil {
+			if err := s.providerRepository.Create(ctx, providerObj); err != nil {
+				return err
+			}
+		} else {
+			if err := s.providerRepository.Update(ctx, providerObj); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 // CreateProvider creates a new provider.
-func (s *Service) CreateProvider(ctx context.Context, input *CreateInput, source string) (*CreateProviderResponse, error) {
-	providerObj, err := provider.NewProvider(input.Name, input.ClientID, input.ClientSecret, input.RedirectURI, input.AuthURL, input.TokenURL, input.Scopes, source)
+func (s *Service) CreateProvider(ctx context.Context, request *CreateProviderRequest, source string) (*CreateProviderResponse, error) {
+	providerObj, err := provider.NewProvider(request.Name, request.ClientID, request.ClientSecret, request.RedirectURI, request.AuthURL, request.TokenURL, request.Scopes, source)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create provider: %w", err)
 	}
 
-	if err := s.providerRepository.Create(ctx, &providerObj); err != nil {
+	if err := s.providerRepository.Create(ctx, providerObj); err != nil {
 		return nil, fmt.Errorf("failed to create provider: %w", err)
 	}
 
@@ -145,23 +185,23 @@ func (s *Service) CreateProvider(ctx context.Context, input *CreateInput, source
 }
 
 // UpdateProvider updates a provider by name.
-func (s *Service) UpdateProvider(ctx context.Context, name string, input *UpdateInput) (*UpdateProviderResponse, error) {
+func (s *Service) UpdateProvider(ctx context.Context, name string, request *UpdateProviderRequest) (*UpdateProviderResponse, error) {
 	providerObj, err := s.providerRepository.FindByName(ctx, name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find provider by name: %w", err)
 	}
 
-	encryptedClientSecret, err := s.encryptor.Encrypt(input.ClientSecret)
+	encryptedClientSecret, err := s.encryptor.Encrypt(request.ClientSecret)
 	if err != nil {
 		return nil, fmt.Errorf("failed to encrypt client secret: %w", err)
 	}
 
-	providerObj.ClientID = input.ClientID
+	providerObj.ClientID = request.ClientID
 	providerObj.ClientSecret = encryptedClientSecret
-	providerObj.RedirectURL = input.RedirectURI
-	providerObj.AuthURL = input.AuthURL
-	providerObj.TokenURL = input.TokenURL
-	providerObj.Scopes = input.Scopes
+	providerObj.RedirectURL = request.RedirectURI
+	providerObj.AuthURL = request.AuthURL
+	providerObj.TokenURL = request.TokenURL
+	providerObj.Scopes = request.Scopes
 
 	if err := s.providerRepository.Update(ctx, providerObj); err != nil {
 		return nil, fmt.Errorf("failed to update provider: %w", err)
@@ -182,17 +222,23 @@ func (s *Service) UpdateProvider(ctx context.Context, name string, input *Update
 }
 
 // DeleteProvider deletes a provider by name. It returns an error if the provider has associated oauth apps.
-func (s *Service) DeleteProvider(ctx context.Context, name string) error {
-	apps, err := s.oauthAppRepository.ListForProvider(ctx, name)
+func (s *Service) DeleteProvider(ctx context.Context, request *DeleteProviderRequest) error {
+	apps, err := s.oauthAppRepository.ListForProvider(ctx, request.Name)
 	if err != nil {
 		return fmt.Errorf("failed to list oauth apps for provider: %w", err)
 	}
 
-	if len(apps) > 0 {
+	if len(apps) > 0 && !request.DeleteConnectedOAuthApps {
 		return fmt.Errorf("provider has associated oauth apps")
 	}
 
-	if err := s.providerRepository.Delete(ctx, name); err != nil {
+	for _, app := range apps {
+		if err := s.oauthAppRepository.Delete(ctx, app.ID); err != nil {
+			return fmt.Errorf("failed to delete oauth app: %w", err)
+		}
+	}
+
+	if err := s.providerRepository.Delete(ctx, request.Name); err != nil {
 		return fmt.Errorf("failed to delete provider: %w", err)
 	}
 
@@ -200,7 +246,7 @@ func (s *Service) DeleteProvider(ctx context.Context, name string) error {
 }
 
 // GetAuthorizationURL returns the authorization URL for a provider.
-func (s *Service) GetAuthorizationURL(ctx context.Context, input *GetAuthorizationURLInput) (*GetAuthorizationURLResponse, error) {
+func (s *Service) GetAuthorizationURL(ctx context.Context, input *GetAuthorizationURLRequest) (*GetAuthorizationURLResponse, error) {
 	providerObj, err := s.providerRepository.FindByName(ctx, input.Provider)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find provider by name: %w", err)
@@ -234,7 +280,7 @@ func (s *Service) GetAuthorizationURL(ctx context.Context, input *GetAuthorizati
 }
 
 // ExchangeAuthorizationCode exchanges an authorization code for an access token.
-func (s *Service) ExchangeAuthorizationCode(ctx context.Context, input *ExchangeAuthorizationCodeInput) error {
+func (s *Service) ExchangeAuthorizationCode(ctx context.Context, input *ExchangeAuthorizationCodeRequest) error {
 	providerObj, err := s.providerRepository.FindByName(ctx, input.Provider)
 	if err != nil {
 		return fmt.Errorf("failed to find providerObj by name: %w", err)
@@ -252,17 +298,17 @@ func (s *Service) ExchangeAuthorizationCode(ctx context.Context, input *Exchange
 		return fmt.Errorf("failed to exchange authorization code: %w", err)
 	}
 
-	oauthApp := oauthapp.OAuthApp{
-		Provider:     providerObj.Name,
-		Scopes:       providerObj.Scopes,
-		AccessToken:  token.AccessToken,
-		RefreshToken: token.RefreshToken,
-		ExpiresAt:    token.ExpiresAt,
-		TokenType:    token.TokenType,
-		OwnerID:      input.OwnerID,
-	}
+	oauthApp := oauthapp.NewOAuthApp(
+		providerObj.Name,
+		token.AccessToken,
+		token.RefreshToken,
+		token.TokenType,
+		token.ExpiresAt,
+		providerObj.Scopes,
+		input.OwnerID,
+	)
 
-	if err := s.oauthAppRepository.Create(ctx, &oauthApp); err != nil {
+	if err := s.oauthAppRepository.Create(ctx, oauthApp); err != nil {
 		return fmt.Errorf("failed to create oauth app: %w", err)
 	}
 

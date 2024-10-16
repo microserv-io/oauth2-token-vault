@@ -17,7 +17,7 @@ type Provider struct {
 	UpdatedAt   time.Time
 }
 
-type CreateInput struct {
+type CreateProviderRequest struct {
 	Name         string
 	ClientID     string
 	ClientSecret string
@@ -27,7 +27,21 @@ type CreateInput struct {
 	Scopes       []string
 }
 
-type UpdateInput struct {
+type UpdateProviderRequest struct {
+	ClientID     string
+	ClientSecret string
+	RedirectURI  string
+	AuthURL      string
+	TokenURL     string
+	Scopes       []string
+}
+
+type SyncProviderRequest struct {
+	Providers []*SyncProvider
+}
+
+type SyncProvider struct {
+	Name         string
 	ClientID     string
 	ClientSecret string
 	RedirectURI  string
@@ -52,7 +66,7 @@ type GetProviderByNameResponse struct {
 	Provider *Provider
 }
 
-type GetAuthorizationURLInput struct {
+type GetAuthorizationURLRequest struct {
 	Provider string
 	State    string
 }
@@ -61,8 +75,13 @@ type GetAuthorizationURLResponse struct {
 	URL *url.URL
 }
 
-type ExchangeAuthorizationCodeInput struct {
+type ExchangeAuthorizationCodeRequest struct {
 	Provider string
 	OwnerID  string
 	Code     string
+}
+
+type DeleteProviderRequest struct {
+	Name                     string
+	DeleteConnectedOAuthApps bool
 }

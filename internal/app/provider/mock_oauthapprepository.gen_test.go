@@ -70,7 +70,7 @@ func (_c *MockOAuthAppRepository_Create_Call) RunAndReturn(run func(context.Cont
 }
 
 // Delete provides a mock function with given fields: ctx, id
-func (_m *MockOAuthAppRepository) Delete(ctx context.Context, id string) error {
+func (_m *MockOAuthAppRepository) Delete(ctx context.Context, id uint) error {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
@@ -78,7 +78,7 @@ func (_m *MockOAuthAppRepository) Delete(ctx context.Context, id string) error {
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uint) error); ok {
 		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Error(0)
@@ -94,14 +94,14 @@ type MockOAuthAppRepository_Delete_Call struct {
 
 // Delete is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id string
+//   - id uint
 func (_e *MockOAuthAppRepository_Expecter) Delete(ctx interface{}, id interface{}) *MockOAuthAppRepository_Delete_Call {
 	return &MockOAuthAppRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
 }
 
-func (_c *MockOAuthAppRepository_Delete_Call) Run(run func(ctx context.Context, id string)) *MockOAuthAppRepository_Delete_Call {
+func (_c *MockOAuthAppRepository_Delete_Call) Run(run func(ctx context.Context, id uint)) *MockOAuthAppRepository_Delete_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string))
+		run(args[0].(context.Context), args[1].(uint))
 	})
 	return _c
 }
@@ -111,7 +111,7 @@ func (_c *MockOAuthAppRepository_Delete_Call) Return(_a0 error) *MockOAuthAppRep
 	return _c
 }
 
-func (_c *MockOAuthAppRepository_Delete_Call) RunAndReturn(run func(context.Context, string) error) *MockOAuthAppRepository_Delete_Call {
+func (_c *MockOAuthAppRepository_Delete_Call) RunAndReturn(run func(context.Context, uint) error) *MockOAuthAppRepository_Delete_Call {
 	_c.Call.Return(run)
 	return _c
 }
