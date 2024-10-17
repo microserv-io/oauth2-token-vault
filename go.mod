@@ -15,6 +15,7 @@ require (
 	google.golang.org/grpc v1.67.0
 	google.golang.org/protobuf v1.34.2
 	gorm.io/driver/postgres v1.5.9
+	gorm.io/driver/sqlite v1.5.6
 	gorm.io/gorm v1.25.12
 )
 
@@ -48,6 +49,7 @@ require (
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
+	github.com/mattn/go-sqlite3 v1.14.22 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect

@@ -24,6 +24,10 @@ type Provider struct {
 	UpdatedAt time.Time
 }
 
+func (Provider) TableName() string {
+	return "providers"
+}
+
 func (dao Provider) ToDomain() *provider.Provider {
 	return &provider.Provider{
 		ID:           dao.ID,
