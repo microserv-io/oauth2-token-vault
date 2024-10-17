@@ -8,6 +8,10 @@
 > 
 > This repository is a work in progress and is not yet ready for use. APIs are subject to change and will not be backwards compatible until release.
 
+<p align="center">
+  <img width="256" height="256" src="docs/logo.png" alt="logo">
+</p>
+
 Standalone service that handles storage of OAuth2 credentials for multiple providers, allowing communication with other
 services over gRPC.
 
@@ -82,7 +86,7 @@ func main() {
 	// Create a new token source factory
 	factory := tokensource.NewFactory(tokensource.WithEndpoint(endpoint))
 
-	// Create a new client with the token source for the provider and resource owner	
+	// Create a new client with the token source for the providerObj and resource owner	
 	client := oauth2.NewClient(context.Background(), factory.CreateTokenSource(context.TODO(), "google", "some-user-id"))
 
 	// Use the client to make requests
