@@ -78,14 +78,15 @@ func TestOAuthAppRepository(t *testing.T) {
 				}
 			},
 			test: func(t *testing.T) {
-				testApp, err := repo.Find(context.Background(), "Test Owner", "Test Provider")
+				app, err := repo.Find(context.Background(), "Test Owner", "Test Provider")
+				if err != nil {
+					t.Fatalf("Failed to find OAuthApp: %v", err)
+				}
 
-				if err := repo.Delete(context.Background(), testApp.ID); err != nil {
+				if err := repo.Delete(context.Background(), app.ID); err != nil {
 					t.Fatalf("Failed to delete OAuthApp: %v", err)
 				}
-				result, err := repo.Find(context.Background(), "Test Owner", "Test Provider")
-				log.Print(result)
-				if err == nil {
+				if _, err := repo.Find(context.Background(), "Test Owner", "Test Provider"); err == nil {
 					t.Fatalf("Expected error when finding deleted OAuthApp, got none")
 				}
 			},
