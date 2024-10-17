@@ -1,6 +1,7 @@
 package gorm
 
 import (
+	"fmt"
 	"github.com/lib/pq"
 	"github.com/microserv-io/oauth2-token-vault/internal/domain/models/oauthapp"
 	"golang.org/x/net/context"
@@ -20,6 +21,10 @@ type OAuthApp struct {
 	OwnerID      string
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
+}
+
+func (OAuthApp) TableName() string {
+	return "oauth_apps"
 }
 
 func (dao OAuthApp) ToDomain() *oauthapp.OAuthApp {
@@ -132,8 +137,15 @@ func (r OAuthAppRepository) UpdateByID(ctx context.Context, id uint, updateFn fu
 }
 
 func (r OAuthAppRepository) Delete(ctx context.Context, id uint) error {
-	if err := r.db.WithContext(ctx).Delete(&OAuthApp{}, id).Error; err != nil {
-		return err
+	q := r.db.WithContext(ctx).Where("id = ?", id).Delete(&OAuthApp{})
+
+	if q.Error != nil {
+		return fmt.Errorf("failed to delete provider: %w", q.Error)
 	}
+
+	if q.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
 	return nil
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"testing"
 )
@@ -62,4 +63,17 @@ func TestOpen(t *testing.T) {
 			mockGorm.AssertNumberOfCalls(t, "Open", 1)
 		})
 	}
+}
+
+func setupTestDB(t *testing.T) *gorm.DB {
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	if err != nil {
+		t.Fatalf("Failed to connect to database: %v", err)
+	}
+
+	if err := db.AutoMigrate(&Provider{}, &OAuthApp{}); err != nil {
+		t.Fatalf("Failed to migrate database: %v", err)
+	}
+
+	return db
 }
