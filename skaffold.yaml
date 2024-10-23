@@ -42,5 +42,5 @@ deploy:
           postgresql.auth.password: unsafePostgresPassword
           postgresql.auth.database: oauth2-token-vault
         setValueTemplates:
-          "image.tag": "{{ .IMAGE_TAG_microserv_io_oauth_credentials_server }}"
-          "image.repository": "{{ .IMAGE_REPO_microserv_io_oauth_credentials_server }}"
+          "image.tag": "{{ .IMAGE_TAG_microserv_io_oauth2_token_vault }}"
+          "image.repository": "{{ .IMAGE_REPO_microserv_io_oauth2_token_vault }}"
