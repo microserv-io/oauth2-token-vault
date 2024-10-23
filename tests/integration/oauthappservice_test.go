@@ -6,12 +6,14 @@ import (
 	"context"
 	"github.com/microserv-io/oauth2-token-vault/internal/domain/models/oauthapp"
 	"github.com/microserv-io/oauth2-token-vault/internal/domain/models/provider"
+	"github.com/microserv-io/oauth2-token-vault/internal/infrastructure/encryption"
 	"github.com/microserv-io/oauth2-token-vault/pkg/proto/oauthcredentials/v1"
 	"github.com/microserv-io/oauth2-token-vault/tests"
 	"google.golang.org/grpc"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 func TestGetOAuthByProvider(t *testing.T) {
@@ -83,30 +85,63 @@ func TestGetOAuthCredentialByProvider(t *testing.T) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{"access_token": "test-access-token"}`))
+		_, _ = w.Write([]byte(`{"access_token": "new-test-access-token"}`))
 	}))
 	defer ts.Close()
 
 	beforeTestFunc := func(t *testing.T, app *tests.TestApp) {
+
+		encryptor, err := encryption.NewAesGcmEncryptor("some-long-but-not-secure-random-key")
+		if err != nil {
+			t.Fatalf("Failed to create encryptor: %v", err)
+		}
+
+		clientSecret, err := encryptor.Encrypt("secret-key")
+		if err != nil {
+			t.Fatalf("Failed to encrypt secret key: %v", err)
+		}
 		if err := app.Repositories.Provider.Create(context.Background(), &provider.Provider{
-			Name:     "Test Provider",
-			TokenURL: ts.URL,
+			Name:         "Test Provider",
+			ClientSecret: clientSecret,
+			TokenURL:     ts.URL,
 		}); err != nil {
 			t.Fatalf("Failed to create provider: %v", err)
+		}
+
+		accessToken, err := encryptor.Encrypt("test-access-token")
+		if err != nil {
+			t.Fatalf("Failed to encrypt access token: %v", err)
+		}
+		refreshToken, err := encryptor.Encrypt("test-refresh-token")
+		if err != nil {
+			t.Fatalf("Failed to encrypt refresh token: %v", err)
 		}
 
 		if err := app.Repositories.OAuthApp.Create(context.Background(), &oauthapp.OAuthApp{
 			Provider:     "Test Provider",
 			OwnerID:      "Test Owner",
-			RefreshToken: "test-refresh-token",
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
+			ExpiresAt:    time.Now().Add(-1 * time.Hour),
 		}); err != nil {
 			t.Fatalf("Failed to create oauth app: %v", err)
+		}
+		invalidAccessToken, err := encryptor.Encrypt("invalid-access-token")
+		if err != nil {
+			t.Fatalf("Failed to encrypt access token: %v", err)
+		}
+
+		invalidRefreshToken, err := encryptor.Encrypt("invalid-refresh-token")
+		if err != nil {
+			t.Fatalf("Failed to encrypt refresh token: %v", err)
 		}
 
 		if err := app.Repositories.OAuthApp.Create(context.Background(), &oauthapp.OAuthApp{
 			Provider:     "Test Provider",
 			OwnerID:      "Test Owner 2",
-			RefreshToken: "invalid-refresh-token",
+			AccessToken:  invalidAccessToken,
+			RefreshToken: invalidRefreshToken,
+			ExpiresAt:    time.Now().Add(-1 * time.Hour),
 		}); err != nil {
 			t.Fatalf("Failed to create oauth credential: %v", err)
 		}
@@ -127,7 +162,7 @@ func TestGetOAuthCredentialByProvider(t *testing.T) {
 			},
 			Request: requestFunc,
 			ExpectedResp: &oauthcredentials.GetOAuthCredentialByProviderResponse{
-				AccessToken: "test-access-token",
+				AccessToken: "new-test-access-token",
 			},
 		},
 		{

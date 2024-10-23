@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/microserv-io/oauth2-token-vault/internal/domain/models/oauthapp"
 	"github.com/microserv-io/oauth2-token-vault/internal/domain/models/provider"
+	oauth3 "github.com/microserv-io/oauth2-token-vault/internal/domain/oauth2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"golang.org/x/oauth2"
@@ -60,7 +61,7 @@ func TestOAuthAppService_ListOAuthAppsForOwner(t *testing.T) {
 
 			logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-			service := NewService(oauthAppRepository, nil, nil, logger)
+			service := NewService(oauthAppRepository, nil, nil, nil, logger)
 
 			resp, err := service.ListOAuthAppsForOwner(context.Background(), tt.ownerID)
 			if tt.expectedError {
@@ -118,7 +119,7 @@ func TestOAuthAppService_GetOAuthForProviderAndOwner(t *testing.T) {
 
 			logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-			service := NewService(oauthAppRepository, nil, nil, logger)
+			service := NewService(oauthAppRepository, nil, nil, nil, logger)
 
 			resp, err := service.GetOAuthForProviderAndOwner(context.Background(), tt.providerID, tt.ownerID)
 			if tt.expectedError {
@@ -136,7 +137,7 @@ func TestService_RetrieveAccessToken(t *testing.T) {
 		name          string
 		providerID    string
 		ownerID       string
-		mockSetup     func(oauthAppRepository *MockOAuthAppRepository, providerRepository *MockProviderRepository, tokenSourceFactory *MockTokenSourceFactory)
+		mockSetup     func(oauthAppRepository *MockOAuthAppRepository, providerRepository *MockProviderRepository, tokenSourceFactory *MockTokenSourceFactory, encryptor *MockEncryptor)
 		expectedError bool
 		expectedResp  *RetrieveAccessTokenResponse
 	}{
@@ -144,15 +145,15 @@ func TestService_RetrieveAccessToken(t *testing.T) {
 			name:       "Success",
 			providerID: "provider1",
 			ownerID:    "owner1",
-			mockSetup: func(oauthAppRepository *MockOAuthAppRepository, providerRepository *MockProviderRepository, tokenSourceFactory *MockTokenSourceFactory) {
-
+			mockSetup: func(oauthAppRepository *MockOAuthAppRepository, providerRepository *MockProviderRepository, tokenSourceFactory *MockTokenSourceFactory, encryptor *MockEncryptor) {
+				now := time.Now()
 				mockOAuthApp := &oauthapp.OAuthApp{
 					ID:           1,
 					Provider:     "provider1",
 					AccessToken:  "oldAccessToken",
 					RefreshToken: "oldRefreshToken",
 					TokenType:    "Bearer",
-					ExpiresAt:    time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC).Add(-time.Hour),
+					ExpiresAt:    now.Add(-time.Hour),
 				}
 				mockProvider := &provider.Provider{
 					ClientID:     "client1",
@@ -162,7 +163,20 @@ func TestService_RetrieveAccessToken(t *testing.T) {
 
 				oauthAppRepository.EXPECT().Find(mock.Anything, "owner1", "provider1").Return(mockOAuthApp, nil)
 				providerRepository.EXPECT().FindByName(mock.Anything, "provider1").Return(mockProvider, nil)
-				tokenSourceFactory.EXPECT().NewTokenSource(mock.Anything, mockProvider, mockOAuthApp).Return(mockTokenSource{
+
+				encryptor.EXPECT().Decrypt("secret1").Return("secret1", nil)
+				encryptor.EXPECT().Decrypt("oldAccessToken").Return("oldAccessToken", nil)
+				encryptor.EXPECT().Decrypt("oldRefreshToken").Return("oldRefreshToken", nil)
+
+				tokenSourceFactory.EXPECT().NewTokenSource(mock.Anything, &oauth3.TokenSourceConfig{
+					ClientID:     "client1",
+					ClientSecret: "secret1",
+					TokenURL:     "http://token",
+					AccessToken:  "oldAccessToken",
+					RefreshToken: "oldRefreshToken",
+					TokenType:    "Bearer",
+					ExpiresAt:    now.Add(-time.Hour),
+				}).Return(mockTokenSource{
 					token: &oauth2.Token{
 						AccessToken:  "newAccessToken",
 						RefreshToken: "newRefreshToken",
@@ -170,7 +184,7 @@ func TestService_RetrieveAccessToken(t *testing.T) {
 						Expiry:       time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC).Add(time.Hour),
 					},
 					err: nil,
-				})
+				}, nil)
 				oauthAppRepository.EXPECT().UpdateByID(mock.Anything, uint(1), mock.Anything).Return(nil)
 			},
 			expectedError: false,
@@ -182,7 +196,7 @@ func TestService_RetrieveAccessToken(t *testing.T) {
 			name:       "Failure - Find Error",
 			providerID: "provider2",
 			ownerID:    "owner2",
-			mockSetup: func(oauthAppRepository *MockOAuthAppRepository, providerRepository *MockProviderRepository, tokenSourceFactory *MockTokenSourceFactory) {
+			mockSetup: func(oauthAppRepository *MockOAuthAppRepository, providerRepository *MockProviderRepository, tokenSourceFactory *MockTokenSourceFactory, encryptor *MockEncryptor) {
 				oauthAppRepository.EXPECT().Find(mock.Anything, "owner2", "provider2").Return(nil, errors.New("find error"))
 			},
 			expectedError: true,
@@ -192,7 +206,7 @@ func TestService_RetrieveAccessToken(t *testing.T) {
 			name:       "Failure - Provider Error",
 			providerID: "provider3",
 			ownerID:    "owner3",
-			mockSetup: func(oauthAppRepository *MockOAuthAppRepository, providerRepository *MockProviderRepository, tokenSourceFactory *MockTokenSourceFactory) {
+			mockSetup: func(oauthAppRepository *MockOAuthAppRepository, providerRepository *MockProviderRepository, tokenSourceFactory *MockTokenSourceFactory, encryptor *MockEncryptor) {
 				oauthAppRepository.EXPECT().Find(mock.Anything, "owner3", "provider3").Return(&oauthapp.OAuthApp{
 					ID:          3,
 					Provider:    "provider3",
@@ -208,7 +222,9 @@ func TestService_RetrieveAccessToken(t *testing.T) {
 			name:       "Failure - Token Error",
 			providerID: "provider4",
 			ownerID:    "owner4",
-			mockSetup: func(oauthAppRepository *MockOAuthAppRepository, providerRepository *MockProviderRepository, tokenSourceFactory *MockTokenSourceFactory) {
+			mockSetup: func(oauthAppRepository *MockOAuthAppRepository, providerRepository *MockProviderRepository, tokenSourceFactory *MockTokenSourceFactory, encryptor *MockEncryptor) {
+
+				now := time.Now()
 
 				mockOAuthApp := &oauthapp.OAuthApp{
 					ID:           4,
@@ -216,7 +232,7 @@ func TestService_RetrieveAccessToken(t *testing.T) {
 					AccessToken:  "oldAccessToken",
 					RefreshToken: "oldRefreshToken",
 					TokenType:    "Bearer",
-					ExpiresAt:    time.Now().Add(-time.Hour),
+					ExpiresAt:    now.Add(-time.Hour),
 				}
 				mockProvider := &provider.Provider{
 					ClientID:     "client4",
@@ -226,10 +242,26 @@ func TestService_RetrieveAccessToken(t *testing.T) {
 
 				oauthAppRepository.EXPECT().Find(mock.Anything, "owner4", "provider4").Return(mockOAuthApp, nil)
 				providerRepository.EXPECT().FindByName(mock.Anything, "provider4").Return(mockProvider, nil)
-				tokenSourceFactory.EXPECT().NewTokenSource(mock.Anything, mockProvider, mockOAuthApp).Return(mockTokenSource{
+
+				encryptor.EXPECT().Decrypt("secret4").Return("secret4", nil)
+				encryptor.EXPECT().Decrypt("oldAccessToken").Return("oldAccessToken", nil)
+				encryptor.EXPECT().Decrypt("oldRefreshToken").Return("oldRefreshToken", nil)
+
+				tokenSourceFactory.EXPECT().NewTokenSource(mock.Anything, &oauth3.TokenSourceConfig{
+					ClientID:     "client4",
+					ClientSecret: "secret4",
+					AuthURL:      "",
+					TokenURL:     "http://token",
+					RedirectURL:  "",
+					Scopes:       nil,
+					AccessToken:  "oldAccessToken",
+					RefreshToken: "oldRefreshToken",
+					TokenType:    "Bearer",
+					ExpiresAt:    now.Add(-time.Hour),
+				}).Return(mockTokenSource{
 					token: nil,
 					err:   errors.New("token error"),
-				})
+				}, nil)
 			},
 			expectedError: true,
 			expectedResp:  nil,
@@ -241,12 +273,13 @@ func TestService_RetrieveAccessToken(t *testing.T) {
 			oauthAppRepository := NewMockOAuthAppRepository(t)
 			providerRepository := NewMockProviderRepository(t)
 			tokenSourceFactory := NewMockTokenSourceFactory(t)
+			encryptor := NewMockEncryptor(t)
 
-			tt.mockSetup(oauthAppRepository, providerRepository, tokenSourceFactory)
+			tt.mockSetup(oauthAppRepository, providerRepository, tokenSourceFactory, encryptor)
 
 			logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-			service := NewService(oauthAppRepository, providerRepository, tokenSourceFactory, logger)
+			service := NewService(oauthAppRepository, providerRepository, tokenSourceFactory, encryptor, logger)
 
 			resp, err := service.RetrieveAccessToken(context.Background(), tt.providerID, tt.ownerID)
 			if tt.expectedError {

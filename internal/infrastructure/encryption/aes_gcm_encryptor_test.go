@@ -5,7 +5,7 @@ import (
 )
 
 func TestAesGcmEncryptor(t *testing.T) {
-	secretKey := "mysecretkey"
+	secretKey := "some-long-but-not-secure-random-key"
 	encryptor, err := NewAesGcmEncryptor(secretKey)
 	if err != nil {
 		t.Errorf("NewAesGcmEncryptor() error = %v", err)
@@ -17,7 +17,7 @@ func TestAesGcmEncryptor(t *testing.T) {
 		plaintext string
 		wantErr   bool
 	}{
-		{"Encrypt and Decrypt valid text", "Hello, World!", false},
+		{"Encrypt and Decrypt valid text", "test-refresh-token", false},
 		{"Encrypt and Decrypt empty text", "", false},
 		{"Encrypt and Decrypt special characters", "!@#$%^&*()_+-=", false},
 	}
@@ -30,6 +30,7 @@ func TestAesGcmEncryptor(t *testing.T) {
 				t.Errorf("Encrypt() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
 			// Test Decrypt
 			decryptedText, err := encryptor.Decrypt(ciphertext)
 			if (err != nil) != tt.wantErr {

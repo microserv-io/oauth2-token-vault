@@ -2,37 +2,30 @@ package oauth2
 
 import (
 	"context"
+	oauth "github.com/microserv-io/oauth2-token-vault/internal/domain/oauth2"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/microserv-io/oauth2-token-vault/internal/domain/models/oauthapp"
-	"github.com/microserv-io/oauth2-token-vault/internal/domain/models/provider"
 	"golang.org/x/oauth2"
 )
 
 func TestTokenSourceFactory_NewTokenSource(t *testing.T) {
 	tests := []struct {
 		name      string
-		provider  provider.Provider
-		oauthApp  oauthapp.OAuthApp
+		input     *oauth.TokenSourceConfig
 		wantToken *oauth2.Token
 	}{
 		{
 			name: "valid token source",
-			provider: provider.Provider{
-				Name:         "provider1",
+			input: &oauth.TokenSourceConfig{
 				ClientID:     "client_id",
 				ClientSecret: "client_secret",
 				Scopes:       []string{"scope1"},
 				AuthURL:      "https://auth.url",
 				TokenURL:     "https://token.url",
 				RedirectURL:  "https://redirect.url",
-			},
-			oauthApp: oauthapp.OAuthApp{
-				ID:           1,
-				Provider:     "provider1",
 				AccessToken:  "access_token",
 				RefreshToken: "refresh_token",
 				TokenType:    "Bearer",
@@ -47,18 +40,13 @@ func TestTokenSourceFactory_NewTokenSource(t *testing.T) {
 		},
 		{
 			name: "expired token",
-			provider: provider.Provider{
-				Name:         "provider1",
+			input: &oauth.TokenSourceConfig{
 				ClientID:     "client_id",
 				ClientSecret: "client_secret",
 				Scopes:       []string{"scope1"},
 				AuthURL:      "https://auth.url",
 				TokenURL:     "https://token.url",
 				RedirectURL:  "https://redirect.url",
-			},
-			oauthApp: oauthapp.OAuthApp{
-				ID:           1,
-				Provider:     "provider1",
 				AccessToken:  "access_token",
 				RefreshToken: "refresh_token",
 				TokenType:    "Bearer",
@@ -92,10 +80,13 @@ func TestTokenSourceFactory_NewTokenSource(t *testing.T) {
 
 			defer ts.Close()
 
-			tt.provider.TokenURL = ts.URL
+			tt.input.TokenURL = ts.URL
 
 			factory := &TokenSourceFactory{}
-			tokenSource := factory.NewTokenSource(context.Background(), &tt.provider, &tt.oauthApp)
+			tokenSource, err := factory.NewTokenSource(context.Background(), tt.input)
+			if err != nil {
+				t.Fatalf("TokenSourceFactory.NewTokenSource() error = %v", err)
+			}
 			gotToken, err := tokenSource.Token()
 			if err != nil {
 				t.Fatalf("TokenSource.Token() error = %v", err)
