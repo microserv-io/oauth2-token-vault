@@ -43,7 +43,6 @@ func (e *AesGcmEncryptor) Encrypt(plaintext string) (string, error) {
 	}
 
 	ciphertext := gcm.Seal(nonce, nonce, []byte(plaintext), nil)
-
 	return base64.StdEncoding.EncodeToString(ciphertext), nil
 }
 

@@ -72,7 +72,7 @@ func NewApplication(cfgPath string, opts ...Option) (*Application, error) {
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	encryptor, err := encryption.NewAesGcmEncryptor("random-key")
+	encryptor, err := encryption.NewAesGcmEncryptor("some-long-but-not-secure-random-key")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create encryptor: %v", err)
 	}
@@ -81,6 +81,7 @@ func NewApplication(cfgPath string, opts ...Option) (*Application, error) {
 		oauthAppRepository,
 		providerRepository,
 		&oauth2.TokenSourceFactory{},
+		encryptor,
 		logger,
 	)
 

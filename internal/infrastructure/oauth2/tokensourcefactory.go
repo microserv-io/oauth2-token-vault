@@ -2,8 +2,6 @@ package oauth2
 
 import (
 	"context"
-	"github.com/microserv-io/oauth2-token-vault/internal/domain/models/oauthapp"
-	"github.com/microserv-io/oauth2-token-vault/internal/domain/models/provider"
 	oauth "github.com/microserv-io/oauth2-token-vault/internal/domain/oauth2"
 	"golang.org/x/oauth2"
 )
@@ -13,22 +11,26 @@ var _ oauth.TokenSourceFactory = &TokenSourceFactory{}
 type TokenSourceFactory struct {
 }
 
-func (t *TokenSourceFactory) NewTokenSource(ctx context.Context, provider *provider.Provider, oauthApp *oauthapp.OAuthApp) oauth2.TokenSource {
+func (t *TokenSourceFactory) NewTokenSource(
+	ctx context.Context,
+	tokenSourceConfig *oauth.TokenSourceConfig,
+) (oauth2.TokenSource, error) {
+
 	client := oauth2.Config{
-		ClientID:     provider.ClientID,
-		ClientSecret: provider.ClientSecret,
+		ClientID:     tokenSourceConfig.ClientID,
+		ClientSecret: tokenSourceConfig.ClientSecret,
 		Endpoint: oauth2.Endpoint{
-			AuthURL:  provider.AuthURL,
-			TokenURL: provider.TokenURL,
+			AuthURL:  tokenSourceConfig.AuthURL,
+			TokenURL: tokenSourceConfig.TokenURL,
 		},
-		RedirectURL: provider.RedirectURL,
-		Scopes:      provider.Scopes,
+		RedirectURL: tokenSourceConfig.RedirectURL,
+		Scopes:      tokenSourceConfig.Scopes,
 	}
 
 	return client.TokenSource(ctx, &oauth2.Token{
-		AccessToken:  oauthApp.AccessToken,
-		RefreshToken: oauthApp.RefreshToken,
-		Expiry:       oauthApp.ExpiresAt,
-		TokenType:    oauthApp.TokenType,
-	})
+		AccessToken:  tokenSourceConfig.AccessToken,
+		RefreshToken: tokenSourceConfig.RefreshToken,
+		Expiry:       tokenSourceConfig.ExpiresAt,
+		TokenType:    tokenSourceConfig.TokenType,
+	}), nil
 }

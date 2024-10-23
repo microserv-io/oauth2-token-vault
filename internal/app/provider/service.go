@@ -133,6 +133,11 @@ func (s *Service) SyncProviders(ctx context.Context, request *SyncProviderReques
 	}
 
 	for _, existingProvider := range existingProviders {
+
+		if existingProvider.Source != provider.SourceConfig {
+			continue
+		}
+
 		if _, found := providersMap[existingProvider.Name]; !found {
 			if err := s.providerRepository.Delete(ctx, existingProvider.Name); err != nil {
 				slog.Warn("failed to delete provider")
@@ -141,9 +146,22 @@ func (s *Service) SyncProviders(ctx context.Context, request *SyncProviderReques
 	}
 
 	for _, providerToSync := range request.Providers {
-		providerObj, err := provider.NewProvider(providerToSync.Name, providerToSync.ClientID, providerToSync.ClientSecret, providerToSync.RedirectURI, providerToSync.AuthURL, providerToSync.TokenURL, providerToSync.Scopes, "config")
+
+		clientSecret, err := s.encryptor.Encrypt(providerToSync.ClientSecret)
 		if err != nil {
-			return fmt.Errorf("failed to create provider: %w", err)
+			return fmt.Errorf("failed to encrypt client secret: %w", err)
+		}
+		providerObj, err := provider.NewProvider(
+			providerToSync.Name,
+			providerToSync.ClientID,
+			clientSecret, providerToSync.RedirectURI,
+			providerToSync.AuthURL,
+			providerToSync.TokenURL,
+			providerToSync.Scopes,
+			"config",
+		)
+		if err != nil {
+			return fmt.Errorf("failed to instantiate provider: %w", err)
 		}
 		if _, err := s.providerRepository.FindByName(ctx, providerObj.Name); err != nil {
 			if err := s.providerRepository.Create(ctx, providerObj); err != nil {
@@ -298,10 +316,20 @@ func (s *Service) ExchangeAuthorizationCode(ctx context.Context, input *Exchange
 		return fmt.Errorf("failed to exchange authorization code: %w", err)
 	}
 
+	accessToken, err := s.encryptor.Encrypt(token.AccessToken)
+	if err != nil {
+		return fmt.Errorf("failed to encrypt access token: %w", err)
+	}
+
+	refreshToken, err := s.encryptor.Encrypt(token.RefreshToken)
+	if err != nil {
+		return fmt.Errorf("failed to encrypt refresh token: %w", err)
+	}
+
 	oauthApp := oauthapp.NewOAuthApp(
 		providerObj.Name,
-		token.AccessToken,
-		token.RefreshToken,
+		accessToken,
+		refreshToken,
 		token.TokenType,
 		token.ExpiresAt,
 		providerObj.Scopes,
