@@ -2,7 +2,6 @@ package gorm
 
 import (
 	"context"
-	"log"
 	"testing"
 	"time"
 
@@ -61,7 +60,7 @@ func TestOAuthAppRepository(t *testing.T) {
 				if err != nil {
 					t.Fatalf("Failed to list OAuthApps: %v", err)
 				}
-				log.Printf("apps: %v", apps)
+
 				if len(apps) != 1 || apps[0].OwnerID != "Test Owner" {
 					t.Fatalf("ListForOwner returned incorrect results")
 				}
