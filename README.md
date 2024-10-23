@@ -1,19 +1,21 @@
 # oauth2-token-vault
+
 [![codecov](https://codecov.io/gh/microserv-io/oauth2-token-vault/graph/badge.svg?token=5TTII2E9NM)](https://codecov.io/gh/microserv-io/oauth2-token-vault)
 [![golangci-lint](https://github.com/microserv-io/oauth2-token-vault/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/microserv-io/oauth2-token-vault/actions/workflows/golangci-lint.yml)
 [![Run Tests](https://github.com/microserv-io/oauth2-token-vault/actions/workflows/tests.yml/badge.svg)](https://github.com/microserv-io/oauth2-token-vault/actions/workflows/tests.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/microserv-io/oauth2-token-vault)](https://goreportcard.com/report/github.com/microserv-io/oauth2-token-vault)
 [![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/microserv-io/oauth2-token-vault)]( )
 > [!WARNING]
-> 
-> This repository is a work in progress and is not yet ready for use. APIs are subject to change and will not be backwards compatible until release.
+>
+> This repository is a work in progress and is not yet ready for use. APIs are subject to change and will not be
+> backwards compatible until release.
 
 <p align="center">
   <img width="256" height="256" src="docs/logo.png" alt="logo">
 </p>
 
-Standalone service that handles storage of OAuth2 credentials for multiple providers, allowing communication with other
-services over gRPC.
+Standalone service that handles storage of OAuth2 credentials for multiple providers. Using this service, you can
+support OAuth2.0 resource servers in your application without needing to build your own token storage mechanisms.
 
 This module wraps the [oauth2](https://pkg.go.dev/golang.org/x/oauth2) package from the Go standard library, and
 therefore fully implements the OAuth2 protocol when communicating with Authorization Servers.
@@ -31,12 +33,18 @@ For deployment, please check out our public charts repository [here](https://git
 This section describes deploying your own instance of the server, handling configuration parameters and interacting with
 the service from your other services.
 
+### Supported database servers
+
+- PostgreSQL 14.0 or later (recommended)
+- SQLite
+
 ### Deployment configuration
 
-The service is configured through a `config.yaml` placed in root folder of the application. 
+The service is configured through a `config.yaml` placed in root folder of the application.
 If you use our Helm chart, you can override set the config using the `values.yaml` file.
 
 The following is an example of the configuration file.
+
 ```yaml
 providers:
   - name: google
@@ -49,14 +57,30 @@ providers:
       - "https://www.googleapis.com/auth/analytics"
 ```
 
-You can use environment variables to override the configuration file. This is recommended for secrets. The following is an
+You can use environment variables to override the configuration file. This is recommended for secrets. The following is
+an
 example of how to override the configuration file with environment variables:
 
 ```bash
 export PROVIDERS__0__SECRET_ID=google-secret-id
 ```
 
+You can leave providers empty to not use any preconfigured providers.
+
+#### Dynamic provider provisioning
+
+If you want to dynamically add providers, for example, let your users add their own providers (for example: your
+end-users own GitHub App) you can use the `AddProvider` method on the gRPC Client. You can also dynamically change or
+remove providers that you created through the API.
+
 ### Interaction with the service
+
+#### Authorization flow
+
+Below flow explains the authorization flow. The Token Vault is only responsible for communication with the Authorization
+Server, and will not in any way fetch data from the Resource Server.
+
+![authorization flow](docs/authorization-flow.png)
 
 Communication is done over gRPC. The repository contains a Go client that can be used to interact with the service. You
 can install it by running the following command:
